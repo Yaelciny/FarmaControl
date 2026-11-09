@@ -1,0 +1,31 @@
+# Dependencias
+node_modules/
+
+# Compilaciones
+out/
+dist/
+release/
+*.exe
+
+# Variables de entorno
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Base de datos local y respaldos
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+backups/
+
+# Archivos temporales
+*.log
+.DS_Store
+Thumbs.db
+
+# Configuración local
+.vscode/*
+!.vscode/extensions.json
