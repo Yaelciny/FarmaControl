@@ -6,7 +6,8 @@ import type { CrearProducto, FarmaControlAPI } from "./global"
 const api: FarmaControlAPI = {
   productos: {
     listar: () => ipcRenderer.invoke("productos:listar"),
-    crear: (producto: CrearProducto) => ipcRenderer.invoke("productos:crear", producto)
+    crear: (producto: CrearProducto) =>
+      ipcRenderer.invoke("productos:crear", producto)
   }
 }
 
