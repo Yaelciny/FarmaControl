@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from "@electron-toolkit/utils"
 import icon from "../../resources/icon.png?asset"
 import { initializeDatabase } from "./database/schema"
 import { closeDatabase } from "./database/connection"
+import { registerProductosIpc } from "./ipc/producto.ipc"
 
 function createWindow(): void {
   // Create the browser window.
@@ -42,6 +43,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   initializeDatabase()
+  registerProductosIpc()
   // Set app user model id for windows
   electronApp.setAppUserModelId("com.electron")
 
