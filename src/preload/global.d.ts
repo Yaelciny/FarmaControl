@@ -9,6 +9,7 @@ export interface Producto {
   precio_venta_centavos: number
   stock_minimo: number
   activo: number
+  stock_actual: number
   fecha_creacion: string
 }
 
@@ -25,6 +26,9 @@ export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
     crear: (producto: CrearProducto) => Promise<Producto>
+    actualizar: (producto: CrearProducto & { id: number }) => Promise<Producto>
+    cambiarEstado: (id: number, activo: boolean) => Promise<{ activo: boolean }>
+    eliminar: (id: number) => Promise<{ eliminado: boolean }>
   }
 }
 

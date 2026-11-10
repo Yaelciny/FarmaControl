@@ -7,7 +7,12 @@ const api: FarmaControlAPI = {
   productos: {
     listar: () => ipcRenderer.invoke("productos:listar"),
     crear: (producto: CrearProducto) =>
-      ipcRenderer.invoke("productos:crear", producto)
+      ipcRenderer.invoke("productos:crear", producto),
+    actualizar: (producto: CrearProducto & { id: number }) =>
+      ipcRenderer.invoke("productos:actualizar", producto),
+    cambiarEstado: (id: number, activo: boolean) =>
+      ipcRenderer.invoke("productos:cambiar-estado", { id, activo }),
+    eliminar: (id: number) => ipcRenderer.invoke("productos:eliminar", id)
   }
 }
 
