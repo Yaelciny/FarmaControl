@@ -7,6 +7,7 @@ import { closeDatabase } from "./database/connection"
 import { registerProductosIpc } from "./ipc/producto.ipc"
 import { registerProveedoresIpc } from "./ipc/proveedor.ipc"
 import { registerEntradasIpc } from "./ipc/entrada.ipc"
+import { registerSalidasIpc } from "./ipc/salida.ipc"
 
 function createWindow(): void {
   // Create the browser window.
@@ -48,6 +49,7 @@ app.whenReady().then(() => {
   registerProductosIpc()
   registerProveedoresIpc()
   registerEntradasIpc()
+  registerSalidasIpc()
   // Set app user model id for windows
   electronApp.setAppUserModelId("com.electron")
 

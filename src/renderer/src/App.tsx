@@ -21,6 +21,7 @@ import {
 import Inventario from "./pages/Inventario"
 import Proveedores from "./pages/Proveedores"
 import Entradas from "./pages/Entradas"
+import Salidas from "./pages/Salidas"
 
 type Pagina =
   | "dashboard"
@@ -47,7 +48,7 @@ const modulos: Array<{
   },
   { id: "inventario", nombre: "Inventario", icono: Package },
   { id: "entradas", nombre: "Entradas", icono: Download },
-  { id: "movimientos", nombre: "Salidas y ajustes", icono: SlidersHorizontal },
+  { id: "movimientos", nombre: "Bajas y ajustes", icono: SlidersHorizontal },
   {
     id: "proveedores",
     nombre: "Proveedores",
@@ -71,8 +72,8 @@ const contenidoModulo: Record<
     descripcion: "Registra proveedores, lotes, costos y fechas de caducidad."
   },
   movimientos: {
-    titulo: "Salidas y ajustes",
-    descripcion: "Controla productos dañados, caducados, perdidos o devueltos."
+    titulo: "Bajas y ajustes",
+    descripcion: "Registra productos dañados, caducados, perdidos, devueltos o correcciones de inventario."
   },
   proveedores: {
     titulo: "Proveedores",
@@ -198,6 +199,8 @@ function App(): JSX.Element {
             <Proveedores />
           ) : pagina === "entradas" ? (
             <Entradas />
+          ) : pagina === "movimientos" ? (
+            <Salidas />
           ) : moduloPendiente ? (
             <section className="rounded-2xl border border-[#dce4e7] bg-white p-10 shadow-sm">
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e4f1f1] text-[#168a8a]">

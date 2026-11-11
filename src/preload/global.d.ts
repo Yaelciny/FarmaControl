@@ -72,6 +72,34 @@ export interface CrearEntrada {
   cantidad: number
 }
 
+export interface LoteDisponible {
+  id: number
+  producto_id: number
+  producto_nombre: string
+  numero_lote: string
+  fecha_caducidad: string
+  cantidad_actual: number
+}
+
+export interface Salida {
+  id: number
+  fecha: string
+  tipo: string
+  motivo: string
+  cantidad: number
+  observacion: string | null
+  producto_nombre: string
+  numero_lote: string
+  fecha_caducidad: string
+}
+
+export interface CrearSalida {
+  lote_id: number
+  motivo: "danado" | "caducado" | "perdido" | "devolucion" | "ajuste" | "otro"
+  cantidad: number
+  observacion: string | null
+}
+
 export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
@@ -96,6 +124,11 @@ export interface FarmaControlAPI {
       entrada: CrearEntrada & { movimiento_id: number }
     ) => Promise<{ actualizado: boolean }>
     cancelar: (movimientoId: number) => Promise<{ cancelado: boolean }>
+  }
+  salidas: {
+    listar: () => Promise<Salida[]>
+    lotesDisponibles: () => Promise<LoteDisponible[]>
+    crear: (salida: CrearSalida) => Promise<{ registrado: boolean }>
   }
 }
 

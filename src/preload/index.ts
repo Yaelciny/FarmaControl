@@ -3,6 +3,7 @@ import { electronAPI } from "@electron-toolkit/preload"
 import type {
   CrearEntrada,
   CrearProducto,
+  CrearSalida,
   DatosProveedor,
   FarmaControlAPI
 } from "./global"
@@ -37,6 +38,11 @@ const api: FarmaControlAPI = {
       ipcRenderer.invoke("entradas:actualizar", entrada),
     cancelar: (movimientoId: number) =>
       ipcRenderer.invoke("entradas:cancelar", movimientoId)
+  },
+  salidas: {
+    listar: () => ipcRenderer.invoke("salidas:listar"),
+    lotesDisponibles: () => ipcRenderer.invoke("salidas:lotes-disponibles"),
+    crear: (salida: CrearSalida) => ipcRenderer.invoke("salidas:crear", salida)
   }
 }
 
