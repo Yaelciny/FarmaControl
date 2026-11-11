@@ -5,6 +5,7 @@ import icon from "../../resources/icon.png?asset"
 import { initializeDatabase } from "./database/schema"
 import { closeDatabase } from "./database/connection"
 import { registerProductosIpc } from "./ipc/producto.ipc"
+import { registerProveedoresIpc } from "./ipc/proveedor.ipc"
 
 function createWindow(): void {
   // Create the browser window.
@@ -44,6 +45,7 @@ function createWindow(): void {
 app.whenReady().then(() => {
   initializeDatabase()
   registerProductosIpc()
+  registerProveedoresIpc()
   // Set app user model id for windows
   electronApp.setAppUserModelId("com.electron")
 

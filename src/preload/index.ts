@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron"
 import { electronAPI } from "@electron-toolkit/preload"
-import type { CrearProducto, FarmaControlAPI } from "./global"
+import type { CrearProducto, DatosProveedor, FarmaControlAPI } from "./global"
 
 // Funcion disponible para React
 const api: FarmaControlAPI = {
@@ -13,6 +13,13 @@ const api: FarmaControlAPI = {
     cambiarEstado: (id: number, activo: boolean) =>
       ipcRenderer.invoke("productos:cambiar-estado", { id, activo }),
     eliminar: (id: number) => ipcRenderer.invoke("productos:eliminar", id)
+  },
+  proveedores: {
+    listar: () => ipcRenderer.invoke("proveedores:listar"),
+    crear: (proveedor: DatosProveedor) => ipcRenderer.invoke("proveedores:crear", proveedor),
+    actualizar: (proveedor: DatosProveedor & { id: number }) => ipcRenderer.invoke("proveedores:actualizar", proveedor),
+    cambiarEstado: (id: number, activo: boolean) => ipcRenderer.invoke("proveedores:cambiar-estado", { id, activo }),
+    eliminar: (id: number) => ipcRenderer.invoke("proveedores:eliminar", id)
   }
 }
 

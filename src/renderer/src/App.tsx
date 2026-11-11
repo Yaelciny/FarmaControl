@@ -19,6 +19,7 @@ import {
   type LucideIcon
 } from 'lucide-react'
 import Inventario from './pages/Inventario'
+import Proveedores from './pages/Proveedores'
 
 type Pagina = 'dashboard' | 'inventario' | 'ventas' | 'entradas' | 'movimientos' | 'reportes' | 'proveedores' | 'configuracion'
 
@@ -74,8 +75,8 @@ function App(): JSX.Element {
                 type="button"
                 onClick={() => setPagina(modulo.id)}
                 className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition ${pagina === modulo.id
-                    ? 'border border-[#c9ece2] bg-[#eaf8f4] text-[#168a8a] shadow-sm'
-                    : 'text-[#52656c] hover:bg-[#f3f8f7] hover:text-[#168a8a]'
+                  ? 'border border-[#c9ece2] bg-[#eaf8f4] text-[#168a8a] shadow-sm'
+                  : 'text-[#52656c] hover:bg-[#f3f8f7] hover:text-[#168a8a]'
                   }`}
               >
                 <modulo.icono className="h-5 w-5" strokeWidth={1.8} />
@@ -97,7 +98,6 @@ function App(): JSX.Element {
           <label className="flex min-w-[260px] flex-1 items-center gap-3 rounded-xl border border-[#d1dcdf] bg-[#fafcfc] px-4 py-2.5 text-sm text-slate-400 shadow-sm focus-within:border-[#18a7a7] focus-within:ring-2 focus-within:ring-[#d9eeee]">
             <span className="text-lg">⌕</span>
             <input className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-slate-400" placeholder="Buscar medicamento, código o lote..." />
-            <kbd className="hidden rounded-md border border-[#d1dcdf] bg-white px-2 py-1 text-xs text-slate-400 sm:block">Ctrl + K</kbd>
           </label>
           <div className="flex items-center gap-4 text-sm text-[#435862]">
             <div className="hidden items-center gap-2 border-r border-[#dce4e7] pr-4 lg:flex">
@@ -118,6 +118,8 @@ function App(): JSX.Element {
         <div className="p-8">
           {pagina === 'inventario' ? (
             <Inventario />
+          ) : pagina === 'proveedores' ? (
+            <Proveedores />
           ) : moduloPendiente ? (
             <section className="rounded-2xl border border-[#dce4e7] bg-white p-10 shadow-sm">
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e4f1f1] text-[#168a8a]">{(() => { const Icono = modulos.find((modulo) => modulo.id === pagina)?.icono ?? Package; return <Icono className="h-7 w-7" /> })()}</div>

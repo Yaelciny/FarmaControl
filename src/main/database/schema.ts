@@ -24,6 +24,9 @@ export function initializeDatabase(): void {
         nombre TEXT NOT NULL,
         telefono TEXT,
         correo TEXT,
+        contacto TEXT,
+        rfc TEXT,
+        direccion TEXT,
         activo INTEGER NOT NULL DEFAULT 1
             CHECK (activo IN (0, 1)),
         fecha_creacion TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -178,6 +181,17 @@ CREATE INDEX IF NOT EXISTS idx_movimientos_fecha
 ON movimientos(fecha);
 
   `)
+
+  const columnasProveedor = db
+    .prepare("PRAGMA table_info(proveedores)")
+    .all() as Array<{ name: string }>
+  const nombresColumnas = new Set(columnasProveedor.map((columna) => columna.name))
+
+  for (const columna of ["contacto", "rfc", "direccion"]) {
+    if (!nombresColumnas.has(columna)) {
+      db.exec(`ALTER TABLE proveedores ADD COLUMN ${columna} TEXT`)
+    }
+  }
 
   console.log("Tablas creadas correctamente")
 }
