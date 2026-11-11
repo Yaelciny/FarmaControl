@@ -123,37 +123,42 @@ export function registerProductosIpc(): void {
       .get(result.lastInsertRowid) as Producto
   })
 
-  ipcMain.handle("productos:actualizar", (_event, datos: ActualizarProducto) => {
-    if (!Number.isSafeInteger(datos?.id) || datos.id <= 0) {
-      throw new Error("Producto inválido")
-    }
+  ipcMain.handle(
+    "productos:actualizar",
+    (_event, datos: ActualizarProducto) => {
+      if (!Number.isSafeInteger(datos?.id) || datos.id <= 0) {
+        throw new Error("Producto inválido")
+      }
 
-    const producto = validarProducto(datos)
-    const result = db
-      .prepare(`
+      const producto = validarProducto(datos)
+      const result = db
+        .prepare(
+          `
         UPDATE productos
         SET codigo_barras = ?, nombre = ?, categoria = ?, presentacion = ?,
             precio_venta_centavos = ?, stock_minimo = ?
         WHERE id = ?
-      `)
-      .run(
-        producto.codigo_barras,
-        producto.nombre,
-        producto.categoria,
-        producto.presentacion,
-        producto.precio_venta_centavos,
-        producto.stock_minimo,
-        datos.id
-      )
+      `
+        )
+        .run(
+          producto.codigo_barras,
+          producto.nombre,
+          producto.categoria,
+          producto.presentacion,
+          producto.precio_venta_centavos,
+          producto.stock_minimo,
+          datos.id
+        )
 
-    if (result.changes === 0) {
-      throw new Error("El medicamento no existe")
+      if (result.changes === 0) {
+        throw new Error("El medicamento no existe")
+      }
+
+      return db
+        .prepare(`${consultaProducto} WHERE p.id = ? GROUP BY p.id`)
+        .get(datos.id) as Producto
     }
-
-    return db
-      .prepare(`${consultaProducto} WHERE p.id = ? GROUP BY p.id`)
-      .get(datos.id) as Producto
-  })
+  )
 
   ipcMain.handle(
     "productos:cambiar-estado",
@@ -180,15 +185,19 @@ export function registerProductosIpc(): void {
     }
 
     const relaciones = db
-      .prepare(`
+      .prepare(
+        `
         SELECT
           (SELECT COUNT(*) FROM lotes WHERE producto_id = ?) AS lotes,
           (SELECT COUNT(*) FROM detalle_ventas WHERE producto_id = ?) AS ventas
-      `)
+      `
+      )
       .get(id, id) as { lotes: number; ventas: number }
 
     if (relaciones.lotes > 0 || relaciones.ventas > 0) {
-      throw new Error("No se puede eliminar: el medicamento ya tiene historial. Puedes cambiar su estado.")
+      throw new Error(
+        "No se puede eliminar: el medicamento ya tiene historial. Puedes cambiar su estado."
+      )
     }
 
     const result = db.prepare("DELETE FROM productos WHERE id = ?").run(id)

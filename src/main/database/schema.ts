@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS lotes (
     proveedor_id INTEGER,
     numero_lote TEXT NOT NULL,
     fecha_caducidad TEXT NOT NULL,
+    fecha_llegada TEXT NOT NULL DEFAULT CURRENT_DATE,
     costo_unitario_centavos INTEGER NOT NULL
         CHECK (costo_unitario_centavos >= 0),
     cantidad_actual INTEGER NOT NULL DEFAULT 0
@@ -188,7 +189,9 @@ ON movimientos(fecha);
   const columnasProveedor = db
     .prepare("PRAGMA table_info(proveedores)")
     .all() as Array<{ name: string }>
-  const nombresColumnas = new Set(columnasProveedor.map((columna) => columna.name))
+  const nombresColumnas = new Set(
+    columnasProveedor.map((columna) => columna.name)
+  )
 
   for (const columna of ["contacto", "rfc", "direccion"]) {
     if (!nombresColumnas.has(columna)) {
@@ -200,7 +203,19 @@ ON movimientos(fecha);
     .prepare("PRAGMA table_info(movimientos)")
     .all() as Array<{ name: string }>
   if (!columnasMovimientos.some((columna) => columna.name === "cancelado")) {
-    db.exec("ALTER TABLE movimientos ADD COLUMN cancelado INTEGER NOT NULL DEFAULT 0")
+    db.exec(
+      "ALTER TABLE movimientos ADD COLUMN cancelado INTEGER NOT NULL DEFAULT 0"
+    )
+  }
+
+  const columnasLotes = db.prepare("PRAGMA table_info(lotes)").all() as Array<{
+    name: string
+  }>
+  if (!columnasLotes.some((columna) => columna.name === "fecha_llegada")) {
+    db.exec("ALTER TABLE lotes ADD COLUMN fecha_llegada TEXT")
+    db.exec(
+      "UPDATE lotes SET fecha_llegada = substr(fecha_registro, 1, 10) WHERE fecha_llegada IS NULL"
+    )
   }
 
   console.log("Tablas creadas correctamente")

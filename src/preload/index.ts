@@ -1,6 +1,11 @@
 import { contextBridge, ipcRenderer } from "electron"
 import { electronAPI } from "@electron-toolkit/preload"
-import type { CrearEntrada, CrearProducto, DatosProveedor, FarmaControlAPI } from "./global"
+import type {
+  CrearEntrada,
+  CrearProducto,
+  DatosProveedor,
+  FarmaControlAPI
+} from "./global"
 
 // Funcion disponible para React
 const api: FarmaControlAPI = {
@@ -16,16 +21,22 @@ const api: FarmaControlAPI = {
   },
   proveedores: {
     listar: () => ipcRenderer.invoke("proveedores:listar"),
-    crear: (proveedor: DatosProveedor) => ipcRenderer.invoke("proveedores:crear", proveedor),
-    actualizar: (proveedor: DatosProveedor & { id: number }) => ipcRenderer.invoke("proveedores:actualizar", proveedor),
-    cambiarEstado: (id: number, activo: boolean) => ipcRenderer.invoke("proveedores:cambiar-estado", { id, activo }),
+    crear: (proveedor: DatosProveedor) =>
+      ipcRenderer.invoke("proveedores:crear", proveedor),
+    actualizar: (proveedor: DatosProveedor & { id: number }) =>
+      ipcRenderer.invoke("proveedores:actualizar", proveedor),
+    cambiarEstado: (id: number, activo: boolean) =>
+      ipcRenderer.invoke("proveedores:cambiar-estado", { id, activo }),
     eliminar: (id: number) => ipcRenderer.invoke("proveedores:eliminar", id)
   },
   entradas: {
     listar: () => ipcRenderer.invoke("entradas:listar"),
-    crear: (entrada: CrearEntrada) => ipcRenderer.invoke("entradas:crear", entrada),
-    actualizar: (entrada: CrearEntrada & { movimiento_id: number }) => ipcRenderer.invoke("entradas:actualizar", entrada),
-    cancelar: (movimientoId: number) => ipcRenderer.invoke("entradas:cancelar", movimientoId)
+    crear: (entrada: CrearEntrada) =>
+      ipcRenderer.invoke("entradas:crear", entrada),
+    actualizar: (entrada: CrearEntrada & { movimiento_id: number }) =>
+      ipcRenderer.invoke("entradas:actualizar", entrada),
+    cancelar: (movimientoId: number) =>
+      ipcRenderer.invoke("entradas:cancelar", movimientoId)
   }
 }
 
