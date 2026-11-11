@@ -22,6 +22,7 @@ import Inventario from "./pages/Inventario"
 import Proveedores from "./pages/Proveedores"
 import Entradas from "./pages/Entradas"
 import Salidas from "./pages/Salidas"
+import Ventas from "./pages/Ventas"
 
 type Pagina =
   | "dashboard"
@@ -73,7 +74,8 @@ const contenidoModulo: Record<
   },
   movimientos: {
     titulo: "Bajas y ajustes",
-    descripcion: "Registra productos dañados, caducados, perdidos, devueltos o correcciones de inventario."
+    descripcion:
+      "Registra productos dañados, caducados, perdidos, devueltos o correcciones de inventario."
   },
   proveedores: {
     titulo: "Proveedores",
@@ -195,6 +197,8 @@ function App(): JSX.Element {
         <div className="p-8">
           {pagina === "inventario" ? (
             <Inventario />
+          ) : pagina === "ventas" ? (
+            <Ventas />
           ) : pagina === "proveedores" ? (
             <Proveedores />
           ) : pagina === "entradas" ? (

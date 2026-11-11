@@ -43,6 +43,15 @@ const api: FarmaControlAPI = {
     listar: () => ipcRenderer.invoke("salidas:listar"),
     lotesDisponibles: () => ipcRenderer.invoke("salidas:lotes-disponibles"),
     crear: (salida: CrearSalida) => ipcRenderer.invoke("salidas:crear", salida)
+  },
+  ventas: {
+    productos: (busqueda: string) =>
+      ipcRenderer.invoke("ventas:productos", busqueda),
+    crear: (venta: {
+      articulos: { producto_id: number; cantidad: number }[]
+      metodo_pago: "efectivo" | "tarjeta" | "transferencia"
+      monto_recibido_centavos: number
+    }) => ipcRenderer.invoke("ventas:crear", venta)
   }
 }
 

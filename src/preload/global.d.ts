@@ -100,6 +100,20 @@ export interface CrearSalida {
   observacion: string | null
 }
 
+export interface ProductoVenta {
+  id: number
+  nombre: string
+  codigo_barras: string | null
+  presentacion: string | null
+  precio_venta_centavos: number
+  stock_actual: number
+}
+
+export interface ArticuloVenta {
+  producto_id: number
+  cantidad: number
+}
+
 export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
@@ -129,6 +143,18 @@ export interface FarmaControlAPI {
     listar: () => Promise<Salida[]>
     lotesDisponibles: () => Promise<LoteDisponible[]>
     crear: (salida: CrearSalida) => Promise<{ registrado: boolean }>
+  }
+  ventas: {
+    productos: (busqueda: string) => Promise<ProductoVenta[]>
+    crear: (venta: {
+      articulos: ArticuloVenta[]
+      metodo_pago: "efectivo" | "tarjeta" | "transferencia"
+      monto_recibido_centavos: number
+    }) => Promise<{
+      id: number
+      total_centavos: number
+      cambio_centavos: number
+    }>
   }
 }
 
