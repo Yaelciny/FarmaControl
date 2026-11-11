@@ -43,6 +43,33 @@ export interface DatosProveedor {
   direccion: string | null
 }
 
+export interface Entrada {
+  id: number
+  fecha: string
+  cantidad: number
+  costo_unitario_centavos: number
+  numero_lote: string
+  fecha_caducidad: string
+  producto_id: number
+  producto_nombre: string
+  proveedor_id: number
+  proveedor_nombre: string
+  lote_id: number
+  movimiento_id: number
+  stock_lote_actual: number
+  tiene_salidas: number
+  cancelado: number
+}
+
+export interface CrearEntrada {
+  producto_id: number
+  proveedor_id: number
+  numero_lote: string
+  fecha_caducidad: string
+  costo_unitario_centavos: number
+  cantidad: number
+}
+
 export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
@@ -57,6 +84,12 @@ export interface FarmaControlAPI {
     actualizar: (proveedor: DatosProveedor & { id: number }) => Promise<Proveedor>
     cambiarEstado: (id: number, activo: boolean) => Promise<{ activo: boolean }>
     eliminar: (id: number) => Promise<{ eliminado: boolean }>
+  }
+  entradas: {
+    listar: () => Promise<Entrada[]>
+    crear: (entrada: CrearEntrada) => Promise<number>
+    actualizar: (entrada: CrearEntrada & { movimiento_id: number }) => Promise<{ actualizado: boolean }>
+    cancelar: (movimientoId: number) => Promise<{ cancelado: boolean }>
   }
 }
 

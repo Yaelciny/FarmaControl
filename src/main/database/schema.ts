@@ -154,6 +154,9 @@ CREATE TABLE IF NOT EXISTS movimientos (
     motivo TEXT,
     fecha TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    cancelado INTEGER NOT NULL DEFAULT 0
+        CHECK (cancelado IN (0, 1)),
+
     FOREIGN KEY (lote_id)
         REFERENCES lotes(id),
 
@@ -191,6 +194,13 @@ ON movimientos(fecha);
     if (!nombresColumnas.has(columna)) {
       db.exec(`ALTER TABLE proveedores ADD COLUMN ${columna} TEXT`)
     }
+  }
+
+  const columnasMovimientos = db
+    .prepare("PRAGMA table_info(movimientos)")
+    .all() as Array<{ name: string }>
+  if (!columnasMovimientos.some((columna) => columna.name === "cancelado")) {
+    db.exec("ALTER TABLE movimientos ADD COLUMN cancelado INTEGER NOT NULL DEFAULT 0")
   }
 
   console.log("Tablas creadas correctamente")

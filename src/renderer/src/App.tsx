@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import Inventario from './pages/Inventario'
 import Proveedores from './pages/Proveedores'
+import Entradas from './pages/Entradas'
 
 type Pagina = 'dashboard' | 'inventario' | 'ventas' | 'entradas' | 'movimientos' | 'reportes' | 'proveedores' | 'configuracion'
 
@@ -120,6 +121,8 @@ function App(): JSX.Element {
             <Inventario />
           ) : pagina === 'proveedores' ? (
             <Proveedores />
+          ) : pagina === 'entradas' ? (
+            <Entradas />
           ) : moduloPendiente ? (
             <section className="rounded-2xl border border-[#dce4e7] bg-white p-10 shadow-sm">
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e4f1f1] text-[#168a8a]">{(() => { const Icono = modulos.find((modulo) => modulo.id === pagina)?.icono ?? Package; return <Icono className="h-7 w-7" /> })()}</div>
