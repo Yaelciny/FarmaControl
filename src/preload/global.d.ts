@@ -140,6 +140,22 @@ export interface DashboardResumen {
   caducidades_proximas: number
 }
 
+export interface DashboardAlerta {
+  id: string
+  tipo: "caducado" | "por_caducar" | "stock_bajo" | "agotado"
+  titulo: string
+  descripcion: string
+  producto_id: number
+  producto_nombre: string
+  lote_id: number | null
+  numero_lote: string | null
+  fecha_caducidad: string | null
+  cantidad: number
+  stock_minimo: number | null
+  destino: "inventario" | "entradas"
+  prioridad: "alta" | "media"
+}
+
 export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
@@ -187,6 +203,7 @@ export interface FarmaControlAPI {
   }
   dashboard: {
     resumen: () => Promise<DashboardResumen>
+    alertas: () => Promise<DashboardAlerta[]>
   }
 }
 

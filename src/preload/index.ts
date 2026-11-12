@@ -58,7 +58,8 @@ const api: FarmaControlAPI = {
       ipcRenderer.invoke("ventas:cancelar", ventaId)
   },
   dashboard: {
-    resumen: () => ipcRenderer.invoke("dashboard:resumen")
+    resumen: () => ipcRenderer.invoke("dashboard:resumen"),
+    alertas: () => ipcRenderer.invoke("dashboard:alertas")
   }
 }
 
