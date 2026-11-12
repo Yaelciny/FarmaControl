@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   Store,
   Truck,
+  WalletCards,
   X,
   type LucideIcon
 } from "lucide-react"
@@ -27,6 +28,7 @@ import Entradas from "./pages/Entradas"
 import Salidas from "./pages/Salidas"
 import Ventas from "./pages/Ventas"
 import Historial from "./pages/Historial"
+import Caja from "./pages/Caja"
 import type { DashboardAlerta, DashboardResumen } from "../../preload/global"
 
 type Pagina =
@@ -34,6 +36,7 @@ type Pagina =
   | "inventario"
   | "ventas"
   | "historial"
+  | "caja"
   | "entradas"
   | "movimientos"
   | "reportes"
@@ -56,6 +59,12 @@ const modulos: Array<{
     grupo: "Operación"
   },
   { id: "historial", nombre: "Historial", icono: History, grupo: "Operación" },
+  {
+    id: "caja",
+    nombre: "Corte de caja",
+    icono: WalletCards,
+    grupo: "Operación"
+  },
   { id: "inventario", nombre: "Inventario", icono: Package },
   { id: "entradas", nombre: "Entradas", icono: Download },
   { id: "movimientos", nombre: "Bajas y ajustes", icono: SlidersHorizontal },
@@ -81,6 +90,10 @@ const contenidoModulo: Record<
     titulo: "Historial de ventas",
     descripcion:
       "Consulta las ventas realizadas y conserva el registro de cada operación."
+  },
+  caja: {
+    titulo: "Corte de caja",
+    descripcion: "Controla aperturas, ventas, efectivo y cierres de turno."
   },
   entradas: {
     titulo: "Entradas de mercancía",
@@ -365,6 +378,8 @@ function App(): JSX.Element {
             <Ventas />
           ) : pagina === "historial" ? (
             <Historial />
+          ) : pagina === "caja" ? (
+            <Caja />
           ) : pagina === "proveedores" ? (
             <Proveedores />
           ) : pagina === "entradas" ? (

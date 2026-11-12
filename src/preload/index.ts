@@ -60,6 +60,16 @@ const api: FarmaControlAPI = {
   dashboard: {
     resumen: () => ipcRenderer.invoke("dashboard:resumen"),
     alertas: () => ipcRenderer.invoke("dashboard:alertas")
+  },
+  caja: {
+    estado: () => ipcRenderer.invoke("caja:estado"),
+    abrir: (fondoInicialCentavos: number) =>
+      ipcRenderer.invoke("caja:abrir", fondoInicialCentavos),
+    cerrar: (datos: {
+      efectivo_contado_centavos: number
+      observacion: string | null
+    }) => ipcRenderer.invoke("caja:cerrar", datos),
+    historial: () => ipcRenderer.invoke("caja:historial")
   }
 }
 

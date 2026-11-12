@@ -156,6 +156,31 @@ export interface DashboardAlerta {
   prioridad: "alta" | "media"
 }
 
+export interface CajaCorte {
+  id: number
+  fecha_apertura: string
+  fecha_cierre: string | null
+  fondo_inicial_centavos: number
+  ventas_efectivo_centavos: number
+  ventas_tarjeta_centavos: number
+  ventas_transferencia_centavos: number
+  total_ventas_centavos: number
+  efectivo_esperado_centavos: number
+  efectivo_contado_centavos: number | null
+  diferencia_centavos: number | null
+  observacion: string | null
+  estado: "abierta" | "cerrada"
+}
+
+export interface CajaResumen {
+  corte: CajaCorte | null
+  ventas_efectivo_centavos: number
+  ventas_tarjeta_centavos: number
+  ventas_transferencia_centavos: number
+  total_ventas_centavos: number
+  efectivo_esperado_centavos: number
+}
+
 export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
@@ -204,6 +229,15 @@ export interface FarmaControlAPI {
   dashboard: {
     resumen: () => Promise<DashboardResumen>
     alertas: () => Promise<DashboardAlerta[]>
+  }
+  caja: {
+    estado: () => Promise<CajaResumen>
+    abrir: (fondoInicialCentavos: number) => Promise<{ id: number }>
+    cerrar: (datos: {
+      efectivo_contado_centavos: number
+      observacion: string | null
+    }) => Promise<{ id: number; diferencia_centavos: number }>
+    historial: () => Promise<CajaCorte[]>
   }
 }
 

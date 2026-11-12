@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS lotes (
 );
 
 
-CREATE TABLE IF NOT EXISTS ventas (
+    CREATE TABLE IF NOT EXISTS ventas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     fecha TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -84,7 +84,30 @@ CREATE TABLE IF NOT EXISTS ventas (
             'completada',
             'cancelada'
         ))
-);
+    );
+
+    CREATE TABLE IF NOT EXISTS cortes_caja (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fecha_apertura TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        fecha_cierre TEXT,
+        fondo_inicial_centavos INTEGER NOT NULL DEFAULT 0
+            CHECK (fondo_inicial_centavos >= 0),
+        ventas_efectivo_centavos INTEGER NOT NULL DEFAULT 0
+            CHECK (ventas_efectivo_centavos >= 0),
+        ventas_tarjeta_centavos INTEGER NOT NULL DEFAULT 0
+            CHECK (ventas_tarjeta_centavos >= 0),
+        ventas_transferencia_centavos INTEGER NOT NULL DEFAULT 0
+            CHECK (ventas_transferencia_centavos >= 0),
+        total_ventas_centavos INTEGER NOT NULL DEFAULT 0
+            CHECK (total_ventas_centavos >= 0),
+        efectivo_esperado_centavos INTEGER NOT NULL DEFAULT 0
+            CHECK (efectivo_esperado_centavos >= 0),
+        efectivo_contado_centavos INTEGER,
+        diferencia_centavos INTEGER,
+        observacion TEXT,
+        estado TEXT NOT NULL DEFAULT 'abierta'
+            CHECK (estado IN ('abierta', 'cerrada'))
+    );
 
 
 CREATE TABLE IF NOT EXISTS detalle_ventas (
@@ -171,6 +194,9 @@ ON lotes(producto_id, fecha_caducidad);
 
 CREATE INDEX IF NOT EXISTS idx_ventas_fecha
 ON ventas(fecha);
+
+CREATE INDEX IF NOT EXISTS idx_cortes_caja_estado
+ON cortes_caja(estado, fecha_apertura);
 
 CREATE INDEX IF NOT EXISTS idx_detalle_ventas_venta
 ON detalle_ventas(venta_id);
