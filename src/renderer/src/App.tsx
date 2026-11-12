@@ -29,7 +29,11 @@ import Salidas from "./pages/Salidas"
 import Ventas from "./pages/Ventas"
 import Historial from "./pages/Historial"
 import Caja from "./pages/Caja"
-import type { DashboardAlerta, DashboardResumen } from "../../preload/global"
+import type {
+  CajaResumen,
+  DashboardAlerta,
+  DashboardResumen
+} from "../../preload/global"
 
 type Pagina =
   | "dashboard"
@@ -65,9 +69,19 @@ const modulos: Array<{
     icono: WalletCards,
     grupo: "Operación"
   },
-  { id: "inventario", nombre: "Inventario", icono: Package },
-  { id: "entradas", nombre: "Entradas", icono: Download },
-  { id: "movimientos", nombre: "Bajas y ajustes", icono: SlidersHorizontal },
+  {
+    id: "inventario",
+    nombre: "Inventario",
+    icono: Package,
+    grupo: "Inventario"
+  },
+  { id: "entradas", nombre: "Entradas", icono: Download, grupo: "Inventario" },
+  {
+    id: "movimientos",
+    nombre: "Bajas y ajustes",
+    icono: SlidersHorizontal,
+    grupo: "Inventario"
+  },
   {
     id: "proveedores",
     nombre: "Proveedores",
@@ -128,6 +142,14 @@ function App(): JSX.Element {
     alerta: DashboardAlerta
     accion: AccionAlerta
   } | null>(null)
+  const [caja, setCaja] = useState<CajaResumen>({
+    corte: null,
+    ventas_efectivo_centavos: 0,
+    ventas_tarjeta_centavos: 0,
+    ventas_transferencia_centavos: 0,
+    total_ventas_centavos: 0,
+    efectivo_esperado_centavos: 0
+  })
   const [resumen, setResumen] = useState<DashboardResumen>({
     ventas_hoy_centavos: 0,
     medicamentos_registrados: 0,
@@ -149,10 +171,12 @@ function App(): JSX.Element {
   useEffect(() => {
     let activo = true
     const cargarDatos = async (): Promise<void> => {
-      const [resumenResultado, alertasResultado] = await Promise.allSettled([
-        window.api.dashboard.resumen(),
-        window.api.dashboard.alertas()
-      ])
+      const [resumenResultado, alertasResultado, cajaResultado] =
+        await Promise.allSettled([
+          window.api.dashboard.resumen(),
+          window.api.dashboard.alertas(),
+          window.api.caja.estado()
+        ])
 
       if (!activo) return
       if (resumenResultado.status === "fulfilled") {
@@ -160,6 +184,9 @@ function App(): JSX.Element {
       }
       if (alertasResultado.status === "fulfilled") {
         setAlertas(alertasResultado.value)
+      }
+      if (cajaResultado.status === "fulfilled") {
+        setCaja(cajaResultado.value)
       }
     }
 
@@ -208,11 +235,13 @@ function App(): JSX.Element {
         <nav className="flex-1 space-y-1" aria-label="Módulos principales">
           {modulos.map((modulo, indice) => (
             <div key={modulo.id}>
-              {modulo.grupo && indice > 0 && (
-                <p className="mb-2 mt-6 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                  {modulo.grupo}
-                </p>
-              )}
+              {modulo.grupo &&
+                (indice === 0 ||
+                  modulos[indice - 1]?.grupo !== modulo.grupo) && (
+                  <p className="mb-2 mt-6 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                    {modulo.grupo}
+                  </p>
+                )}
               <button
                 type="button"
                 onClick={() => setPagina(modulo.id)}
@@ -450,7 +479,7 @@ function App(): JSX.Element {
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 {[
                   {
                     titulo: "Ventas de hoy",
@@ -496,6 +525,19 @@ function App(): JSX.Element {
                     color: "bg-[#f9eef0] text-[#b06b76]",
                     destino: "entradas" as Pagina,
                     enlace: "Ver lotes"
+                  },
+                  {
+                    titulo: "Estado de caja",
+                    valor: caja.corte ? "Abierta" : "Cerrada",
+                    detalle: caja.corte
+                      ? `Esperado: $${(caja.efectivo_esperado_centavos / 100).toFixed(2)}`
+                      : "Lista para abrir",
+                    icono: WalletCards,
+                    color: caja.corte
+                      ? "bg-[#e9f7f1] text-[#3d9877]"
+                      : "bg-[#edf2f3] text-[#64777d]",
+                    destino: "caja" as Pagina,
+                    enlace: "Ver caja"
                   }
                 ].map((tarjeta) => (
                   <button
