@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   Store,
   Truck,
+  X,
   type LucideIcon
 } from "lucide-react"
 import Inventario from "./pages/Inventario"
@@ -38,6 +39,8 @@ type Pagina =
   | "reportes"
   | "proveedores"
   | "configuracion"
+
+type AccionAlerta = "producto" | "entrada" | "lote" | "baja"
 
 const modulos: Array<{
   id: Pagina
@@ -106,6 +109,12 @@ function App(): JSX.Element {
   const [pagina, setPagina] = useState<Pagina>("dashboard")
   const [alertas, setAlertas] = useState<DashboardAlerta[]>([])
   const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false)
+  const [alertaSeleccionada, setAlertaSeleccionada] =
+    useState<DashboardAlerta | null>(null)
+  const [contextoAlerta, setContextoAlerta] = useState<{
+    alerta: DashboardAlerta
+    accion: AccionAlerta
+  } | null>(null)
   const [resumen, setResumen] = useState<DashboardResumen>({
     ventas_hoy_centavos: 0,
     medicamentos_registrados: 0,
@@ -150,9 +159,19 @@ function App(): JSX.Element {
     }
   }, [])
 
-  const irAAlerta = (alerta: DashboardAlerta): void => {
-    setPagina(alerta.destino)
+  const verAlerta = (alerta: DashboardAlerta): void => {
+    setAlertaSeleccionada(alerta)
     setNotificacionesAbiertas(false)
+  }
+
+  const ejecutarAccionAlerta = (
+    alerta: DashboardAlerta,
+    destino: Pagina,
+    accion: AccionAlerta
+  ): void => {
+    setContextoAlerta({ alerta, accion })
+    setPagina(destino)
+    setAlertaSeleccionada(null)
   }
 
   const fechaAlerta = (fecha: string): string => {
@@ -280,7 +299,7 @@ function App(): JSX.Element {
                         <button
                           type="button"
                           key={alerta.id}
-                          onClick={() => irAAlerta(alerta)}
+                          onClick={() => verAlerta(alerta)}
                           className="flex w-full items-start gap-3 rounded-xl p-3 text-left transition hover:bg-[#f5fafa]"
                         >
                           <span
@@ -335,7 +354,13 @@ function App(): JSX.Element {
 
         <div className="p-8">
           {pagina === "inventario" ? (
-            <Inventario />
+            <Inventario
+              productoIdInicial={
+                contextoAlerta?.accion === "producto"
+                  ? contextoAlerta.alerta.producto_id
+                  : null
+              }
+            />
           ) : pagina === "ventas" ? (
             <Ventas />
           ) : pagina === "historial" ? (
@@ -343,9 +368,40 @@ function App(): JSX.Element {
           ) : pagina === "proveedores" ? (
             <Proveedores />
           ) : pagina === "entradas" ? (
-            <Entradas />
+            <Entradas
+              productoIdInicial={
+                contextoAlerta?.accion === "entrada"
+                  ? contextoAlerta.alerta.producto_id
+                  : null
+              }
+              busquedaInicial={
+                contextoAlerta?.accion === "lote"
+                  ? `${contextoAlerta.alerta.producto_nombre} ${contextoAlerta.alerta.numero_lote ?? ""}`
+                  : ""
+              }
+              abrirFormularioInicial={contextoAlerta?.accion === "entrada"}
+            />
           ) : pagina === "movimientos" ? (
-            <Salidas />
+            <Salidas
+              loteIdInicial={
+                contextoAlerta?.accion === "baja"
+                  ? contextoAlerta.alerta.lote_id
+                  : null
+              }
+              motivoInicial="caducado"
+              cantidadInicial={
+                contextoAlerta?.accion === "baja"
+                  ? contextoAlerta.alerta.cantidad
+                  : null
+              }
+              observacionInicial={
+                contextoAlerta?.accion === "baja"
+                  ? contextoAlerta.alerta.tipo === "caducado"
+                    ? "Baja registrada desde alerta de lote caducado"
+                    : "Baja preventiva registrada desde alerta de próxima caducidad"
+                  : ""
+              }
+            />
           ) : moduloPendiente ? (
             <section className="rounded-2xl border border-[#dce4e7] bg-white p-10 shadow-sm">
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e4f1f1] text-[#168a8a]">
@@ -528,6 +584,153 @@ function App(): JSX.Element {
           )}
         </div>
       </main>
+
+      {alertaSeleccionada && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2d33]/55 p-4 backdrop-blur-[2px]"
+          onClick={() => setAlertaSeleccionada(null)}
+        >
+          <section
+            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between border-b border-[#e1e7e8] pb-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#168a8a]">
+                  Detalle de alerta
+                </p>
+                <h2 className="mt-1 text-2xl font-bold text-[#334952]">
+                  {alertaSeleccionada.titulo}
+                </h2>
+              </div>
+              <button
+                type="button"
+                aria-label="Cerrar detalle de alerta"
+                onClick={() => setAlertaSeleccionada(null)}
+                className="rounded-xl p-2 text-slate-400 hover:bg-[#f1f4f5]"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-5 rounded-xl bg-[#f7f9f9] p-4">
+              <p className="text-base font-semibold text-[#334952]">
+                {alertaSeleccionada.producto_nombre}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                {alertaSeleccionada.descripcion}
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border border-[#e1e7e8] bg-white p-3">
+                  <p className="text-xs text-slate-400">Existencias</p>
+                  <p className="mt-1 text-lg font-bold text-[#334952]">
+                    {alertaSeleccionada.cantidad} unidades
+                  </p>
+                </div>
+                {alertaSeleccionada.fecha_caducidad ? (
+                  <div className="rounded-lg border border-[#e1e7e8] bg-white p-3">
+                    <p className="text-xs text-slate-400">
+                      {alertaSeleccionada.tipo === "caducado"
+                        ? "Fecha de caducidad"
+                        : "Caduca el"}
+                    </p>
+                    <p className="mt-1 text-lg font-bold text-[#334952]">
+                      {fechaAlerta(alertaSeleccionada.fecha_caducidad)}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-[#e1e7e8] bg-white p-3">
+                    <p className="text-xs text-slate-400">Stock mínimo</p>
+                    <p className="mt-1 text-lg font-bold text-[#334952]">
+                      {alertaSeleccionada.stock_minimo} unidades
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-[#d9eeee] bg-[#f3fbfa] p-4 text-sm text-[#527070]">
+              <p className="font-semibold text-[#334952]">¿Qué está pasando?</p>
+              <p className="mt-1">
+                {alertaSeleccionada.tipo === "caducado"
+                  ? "Este lote ya caducó y todavía conserva existencias. No debe venderse; puedes consultar el lote o registrar una baja por caducidad."
+                  : alertaSeleccionada.tipo === "por_caducar"
+                    ? "Este lote se acerca a su fecha de caducidad. Puedes consultar sus datos o registrar una baja preventiva si así lo decides."
+                    : alertaSeleccionada.tipo === "agotado"
+                      ? "El producto no tiene existencias disponibles. Puedes consultar su ficha o registrar una nueva entrada de mercancía."
+                      : "Las existencias están en el mínimo configurado o por debajo de él. Conviene revisar el producto y considerar una nueva entrada."}
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setAlertaSeleccionada(null)}
+                className="rounded-xl border border-[#bcd1d1] px-4 py-2.5 text-sm font-medium text-[#527070] hover:bg-[#f7fbfb]"
+              >
+                Cerrar
+              </button>
+              {alertaSeleccionada.destino === "entradas" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    ejecutarAccionAlerta(alertaSeleccionada, "entradas", "lote")
+                  }
+                  className="rounded-xl border border-[#bcd1d1] px-4 py-2.5 text-sm font-medium text-[#527070] hover:bg-[#f7fbfb]"
+                >
+                  Ver lote
+                </button>
+              )}
+              {(alertaSeleccionada.tipo === "caducado" ||
+                alertaSeleccionada.tipo === "por_caducar") && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    ejecutarAccionAlerta(
+                      alertaSeleccionada,
+                      "movimientos",
+                      "baja"
+                    )
+                  }
+                  className="rounded-xl bg-[#b06b76] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#985b66]"
+                >
+                  Registrar baja
+                </button>
+              )}
+              {alertaSeleccionada.destino === "inventario" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      ejecutarAccionAlerta(
+                        alertaSeleccionada,
+                        "inventario",
+                        "producto"
+                      )
+                    }
+                    className="rounded-xl border border-[#bcd1d1] px-4 py-2.5 text-sm font-medium text-[#527070] hover:bg-[#f7fbfb]"
+                  >
+                    Ver producto
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      ejecutarAccionAlerta(
+                        alertaSeleccionada,
+                        "entradas",
+                        "entrada"
+                      )
+                    }
+                    className="rounded-xl bg-[#18a7a7] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#168f8f]"
+                  >
+                    Registrar entrada
+                  </button>
+                </>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   )
 }

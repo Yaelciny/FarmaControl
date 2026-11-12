@@ -26,7 +26,17 @@ const formularioInicial = {
   cantidad: ""
 }
 
-function Entradas(): React.JSX.Element {
+interface EntradasProps {
+  productoIdInicial?: number | null
+  busquedaInicial?: string
+  abrirFormularioInicial?: boolean
+}
+
+function Entradas({
+  productoIdInicial = null,
+  busquedaInicial = "",
+  abrirFormularioInicial = false
+}: EntradasProps): React.JSX.Element {
   const [entradas, setEntradas] = useState<Entrada[]>([])
   const [productos, setProductos] = useState<Producto[]>([])
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
@@ -81,6 +91,22 @@ function Entradas(): React.JSX.Element {
       activo = false
     }
   }, [])
+
+  useEffect(() => {
+    const temporizador = window.setTimeout(() => {
+      if (busquedaInicial) setBusqueda(busquedaInicial)
+      if (productoIdInicial === null || !abrirFormularioInicial) return
+      if (productos.some((producto) => producto.id === productoIdInicial)) {
+        setFormulario((actual) => ({
+          ...actual,
+          producto_id: String(productoIdInicial)
+        }))
+        setError("")
+        setModalAbierto(true)
+      }
+    }, 0)
+    return () => window.clearTimeout(temporizador)
+  }, [abrirFormularioInicial, busquedaInicial, productoIdInicial, productos])
 
   function cerrarModal(): void {
     setModalAbierto(false)

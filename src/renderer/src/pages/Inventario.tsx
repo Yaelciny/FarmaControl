@@ -22,7 +22,13 @@ const presentacionesDisponibles = [
   "Pieza"
 ]
 
-function Inventario(): React.JSX.Element {
+interface InventarioProps {
+  productoIdInicial?: number | null
+}
+
+function Inventario({
+  productoIdInicial = null
+}: InventarioProps): React.JSX.Element {
   const [productos, setProductos] = useState<Producto[]>([])
   const [busqueda, setBusqueda] = useState("")
   const [formulario, setFormulario] = useState(formularioInicial)
@@ -60,6 +66,15 @@ function Inventario(): React.JSX.Element {
       activo = false
     }
   }, [])
+
+  useEffect(() => {
+    if (productoIdInicial === null) return
+    const temporizador = window.setTimeout(() => {
+      const producto = productos.find((item) => item.id === productoIdInicial)
+      if (producto) setBusqueda(producto.nombre)
+    }, 0)
+    return () => window.clearTimeout(temporizador)
+  }, [productoIdInicial, productos])
 
   async function guardarProducto(
     event: FormEvent<HTMLFormElement>

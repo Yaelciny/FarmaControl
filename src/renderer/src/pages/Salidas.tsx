@@ -21,7 +21,19 @@ const motivos = [
   { valor: "otro", nombre: "Otro" }
 ] as const
 
-function Salidas(): React.JSX.Element {
+interface SalidasProps {
+  loteIdInicial?: number | null
+  motivoInicial?: CrearSalida["motivo"]
+  cantidadInicial?: number | null
+  observacionInicial?: string
+}
+
+function Salidas({
+  loteIdInicial = null,
+  motivoInicial = "caducado",
+  cantidadInicial = null,
+  observacionInicial = ""
+}: SalidasProps): React.JSX.Element {
   const [salidas, setSalidas] = useState<Salida[]>([])
   const [lotes, setLotes] = useState<LoteDisponible[]>([])
   const [busqueda, setBusqueda] = useState("")
@@ -62,6 +74,23 @@ function Salidas(): React.JSX.Element {
       activo = false
     }
   }, [])
+
+  useEffect(() => {
+    if (loteIdInicial === null) return
+    const temporizador = window.setTimeout(() => {
+      if (lotes.some((lote) => lote.id === loteIdInicial)) {
+        setFormulario({
+          lote_id: String(loteIdInicial),
+          motivo: motivoInicial,
+          cantidad: cantidadInicial === null ? "" : String(cantidadInicial),
+          observacion: observacionInicial
+        })
+        setError("")
+        setModalAbierto(true)
+      }
+    }, 0)
+    return () => window.clearTimeout(temporizador)
+  }, [cantidadInicial, loteIdInicial, lotes, motivoInicial, observacionInicial])
 
   function cerrarModal(): void {
     setModalAbierto(false)
@@ -117,8 +146,8 @@ function Salidas(): React.JSX.Element {
           Bajas y ajustes de inventario
         </h2>
         <p className="mt-2 max-w-2xl text-gray-500">
-            Registra bajas por daño, caducidad, pérdida o devolución, además de
-            ajustes manuales, sin permitir existencias negativas.
+          Registra bajas por daño, caducidad, pérdida o devolución, además de
+          ajustes manuales, sin permitir existencias negativas.
         </p>
       </div>
 
