@@ -51,7 +51,14 @@ const api: FarmaControlAPI = {
       articulos: { producto_id: number; cantidad: number }[]
       metodo_pago: "efectivo" | "tarjeta" | "transferencia"
       monto_recibido_centavos: number
-    }) => ipcRenderer.invoke("ventas:crear", venta)
+    }) => ipcRenderer.invoke("ventas:crear", venta),
+    listar: () => ipcRenderer.invoke("ventas:listar"),
+    detalle: (ventaId: number) => ipcRenderer.invoke("ventas:detalle", ventaId),
+    cancelar: (ventaId: number) =>
+      ipcRenderer.invoke("ventas:cancelar", ventaId)
+  },
+  dashboard: {
+    resumen: () => ipcRenderer.invoke("dashboard:resumen")
   }
 }
 

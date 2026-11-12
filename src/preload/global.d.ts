@@ -114,6 +114,32 @@ export interface ArticuloVenta {
   cantidad: number
 }
 
+export interface VentaResumen {
+  id: number
+  fecha: string
+  total_centavos: number
+  metodo_pago: string
+  cambio_centavos: number
+  estado: "completada" | "cancelada"
+}
+
+export interface VentaDetalle {
+  id: number
+  producto_nombre: string
+  cantidad: number
+  precio_unitario_centavos: number
+  subtotal_centavos: number
+  numero_lote: string | null
+  cantidad_lote: number | null
+}
+
+export interface DashboardResumen {
+  ventas_hoy_centavos: number
+  medicamentos_registrados: number
+  stock_bajo: number
+  caducidades_proximas: number
+}
+
 export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
@@ -155,6 +181,12 @@ export interface FarmaControlAPI {
       total_centavos: number
       cambio_centavos: number
     }>
+    listar: () => Promise<VentaResumen[]>
+    detalle: (ventaId: number) => Promise<VentaDetalle[]>
+    cancelar: (ventaId: number) => Promise<{ cancelada: boolean }>
+  }
+  dashboard: {
+    resumen: () => Promise<DashboardResumen>
   }
 }
 

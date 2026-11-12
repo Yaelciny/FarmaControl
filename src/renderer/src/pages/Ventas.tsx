@@ -161,7 +161,7 @@ function Ventas(): React.JSX.Element {
       )}
       {ventaExitosa !== null && (
         <div className="rounded-xl bg-[#e5f7ef] p-3 text-sm font-medium text-[#29835f]">
-          Venta #{ventaExitosa} registrada correctamente.
+          Venta registrada correctamente.
         </div>
       )}
 

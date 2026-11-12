@@ -1,5 +1,5 @@
 import type { JSX } from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   AlertTriangle,
   Bell,
@@ -8,6 +8,7 @@ import {
   ChevronDown,
   CircleDollarSign,
   Download,
+  History,
   LayoutDashboard,
   Package,
   Plus,
@@ -23,11 +24,14 @@ import Proveedores from "./pages/Proveedores"
 import Entradas from "./pages/Entradas"
 import Salidas from "./pages/Salidas"
 import Ventas from "./pages/Ventas"
+import Historial from "./pages/Historial"
+import type { DashboardResumen } from "../../preload/global"
 
 type Pagina =
   | "dashboard"
   | "inventario"
   | "ventas"
+  | "historial"
   | "entradas"
   | "movimientos"
   | "reportes"
@@ -47,6 +51,7 @@ const modulos: Array<{
     icono: ShoppingCart,
     grupo: "Operación"
   },
+  { id: "historial", nombre: "Historial", icono: History, grupo: "Operación" },
   { id: "inventario", nombre: "Inventario", icono: Package },
   { id: "entradas", nombre: "Entradas", icono: Download },
   { id: "movimientos", nombre: "Bajas y ajustes", icono: SlidersHorizontal },
@@ -67,6 +72,11 @@ const contenidoModulo: Record<
   ventas: {
     titulo: "Punto de venta",
     descripcion: "Aquí podrás crear carritos, cobrar y consultar el cambio."
+  },
+  historial: {
+    titulo: "Historial de ventas",
+    descripcion:
+      "Consulta las ventas realizadas y conserva el registro de cada operación."
   },
   entradas: {
     titulo: "Entradas de mercancía",
@@ -93,6 +103,12 @@ const contenidoModulo: Record<
 
 function App(): JSX.Element {
   const [pagina, setPagina] = useState<Pagina>("dashboard")
+  const [resumen, setResumen] = useState<DashboardResumen>({
+    ventas_hoy_centavos: 0,
+    medicamentos_registrados: 0,
+    stock_bajo: 0,
+    caducidades_proximas: 0
+  })
   const fechaHoy = new Intl.DateTimeFormat("es-MX", {
     weekday: "long",
     day: "2-digit",
@@ -104,6 +120,20 @@ function App(): JSX.Element {
     pagina !== "dashboard" && pagina !== "inventario"
       ? contenidoModulo[pagina]
       : null
+
+  useEffect(() => {
+    let activo = true
+    window.api.dashboard
+      .resumen()
+      .then((datos) => {
+        if (activo) setResumen(datos)
+      })
+      .catch(() => undefined)
+
+    return () => {
+      activo = false
+    }
+  }, [])
 
   return (
     <div className="flex min-h-screen bg-[#f1f4f5]">
@@ -199,6 +229,8 @@ function App(): JSX.Element {
             <Inventario />
           ) : pagina === "ventas" ? (
             <Ventas />
+          ) : pagina === "historial" ? (
+            <Historial />
           ) : pagina === "proveedores" ? (
             <Proveedores />
           ) : pagina === "entradas" ? (
@@ -242,29 +274,38 @@ function App(): JSX.Element {
                 {[
                   {
                     titulo: "Ventas de hoy",
-                    valor: "$0.00",
-                    detalle: "Sin ventas registradas",
+                    valor: `$${(resumen.ventas_hoy_centavos / 100).toFixed(2)}`,
+                    detalle:
+                      resumen.ventas_hoy_centavos > 0
+                        ? "Ventas completadas hoy"
+                        : "Sin ventas registradas",
                     icono: CircleDollarSign,
                     color: "bg-[#e9f7f1] text-[#3d9877]"
                   },
                   {
                     titulo: "Productos registrados",
-                    valor: "0",
-                    detalle: "Catálogo activo",
+                    valor: String(resumen.medicamentos_registrados),
+                    detalle: "Medicamentos activos",
                     icono: Package,
                     color: "bg-[#e4f1f1] text-[#168a8a]"
                   },
                   {
                     titulo: "Stock bajo",
-                    valor: "0",
-                    detalle: "Todo en orden",
+                    valor: String(resumen.stock_bajo),
+                    detalle:
+                      resumen.stock_bajo > 0
+                        ? "Requieren revisión"
+                        : "Todo en orden",
                     icono: AlertTriangle,
                     color: "bg-[#fff7e6] text-[#b18435]"
                   },
                   {
                     titulo: "Próximas caducidades",
-                    valor: "0",
-                    detalle: "Sin alertas",
+                    valor: String(resumen.caducidades_proximas),
+                    detalle:
+                      resumen.caducidades_proximas > 0
+                        ? "En los próximos 30 días"
+                        : "Sin alertas",
                     icono: CalendarDays,
                     color: "bg-[#f9eef0] text-[#b06b76]"
                   }

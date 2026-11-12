@@ -21,6 +21,25 @@ interface CrearVenta {
   monto_recibido_centavos: number
 }
 
+interface VentaResumen {
+  id: number
+  fecha: string
+  total_centavos: number
+  metodo_pago: string
+  cambio_centavos: number
+  estado: "completada" | "cancelada"
+}
+
+interface VentaDetalle {
+  id: number
+  producto_nombre: string
+  cantidad: number
+  precio_unitario_centavos: number
+  subtotal_centavos: number
+  numero_lote: string | null
+  cantidad_lote: number | null
+}
+
 function validarVenta(datos: CrearVenta): CrearVenta {
   if (
     !datos ||
@@ -56,6 +75,36 @@ function validarVenta(datos: CrearVenta): CrearVenta {
 
 export function registerVentasIpc(): void {
   const db = getDatabase()
+
+  ipcMain.handle(
+    "ventas:listar",
+    () =>
+      db
+        .prepare(
+          "SELECT id, fecha, total_centavos, metodo_pago, cambio_centavos, estado FROM ventas ORDER BY fecha DESC, id DESC"
+        )
+        .all() as VentaResumen[]
+  )
+
+  ipcMain.handle("ventas:detalle", (_event, ventaId: number) => {
+    if (!Number.isSafeInteger(ventaId) || ventaId <= 0)
+      throw new Error("Venta inválida")
+    return db
+      .prepare(
+        `
+        SELECT dv.id, p.nombre AS producto_nombre, dv.cantidad,
+               dv.precio_unitario_centavos, dv.subtotal_centavos,
+               l.numero_lote, dvl.cantidad AS cantidad_lote
+        FROM detalle_ventas dv
+        INNER JOIN productos p ON p.id = dv.producto_id
+        LEFT JOIN detalle_venta_lotes dvl ON dvl.detalle_venta_id = dv.id
+        LEFT JOIN lotes l ON l.id = dvl.lote_id
+        WHERE dv.venta_id = ?
+        ORDER BY dv.id ASC
+      `
+      )
+      .all(ventaId) as VentaDetalle[]
+  })
 
   ipcMain.handle("ventas:productos", (_event, busqueda: string) => {
     const termino = typeof busqueda === "string" ? busqueda.trim() : ""
@@ -191,5 +240,50 @@ export function registerVentasIpc(): void {
     })
 
     return transaccion()
+  })
+
+  ipcMain.handle("ventas:cancelar", (_event, ventaId: number) => {
+    if (!Number.isSafeInteger(ventaId) || ventaId <= 0)
+      throw new Error("Venta inválida")
+
+    const transaccion = db.transaction(() => {
+      const venta = db
+        .prepare("SELECT estado FROM ventas WHERE id = ?")
+        .get(ventaId) as { estado: string } | undefined
+      if (!venta) throw new Error("La venta no existe")
+      if (venta.estado === "cancelada")
+        throw new Error("La venta ya está cancelada")
+
+      const movimientos = db
+        .prepare(
+          "SELECT lote_id, cantidad, costo_unitario_centavos FROM movimientos WHERE venta_id = ? AND tipo = 'venta'"
+        )
+        .all(ventaId) as Array<{
+        lote_id: number
+        cantidad: number
+        costo_unitario_centavos: number
+      }>
+
+      for (const movimiento of movimientos) {
+        db.prepare(
+          "UPDATE lotes SET cantidad_actual = cantidad_actual + ? WHERE id = ?"
+        ).run(movimiento.cantidad, movimiento.lote_id)
+        db.prepare(
+          "INSERT INTO movimientos (lote_id, venta_id, tipo, cantidad, costo_unitario_centavos, motivo) VALUES (?, ?, 'devolucion', ?, ?, 'Reversión por cancelación de venta')"
+        ).run(
+          movimiento.lote_id,
+          ventaId,
+          movimiento.cantidad,
+          movimiento.costo_unitario_centavos
+        )
+      }
+
+      db.prepare("UPDATE ventas SET estado = 'cancelada' WHERE id = ?").run(
+        ventaId
+      )
+    })
+
+    transaccion()
+    return { cancelada: true }
   })
 }
