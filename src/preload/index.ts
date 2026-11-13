@@ -74,6 +74,14 @@ const api: FarmaControlAPI = {
   reportes: {
     resumen: (filtro: { desde: string; hasta: string }) =>
       ipcRenderer.invoke("reportes:resumen", filtro)
+  },
+  auth: {
+    estado: () => ipcRenderer.invoke("auth:estado"),
+    configurar: (password: string) =>
+      ipcRenderer.invoke("auth:configurar", password),
+    iniciar: (password: string) => ipcRenderer.invoke("auth:iniciar", password),
+    cambiar: (datos: { actual: string; nueva: string }) =>
+      ipcRenderer.invoke("auth:cambiar", datos)
   }
 }
 

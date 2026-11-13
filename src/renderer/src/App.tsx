@@ -30,6 +30,8 @@ import Ventas from "./pages/Ventas"
 import Historial from "./pages/Historial"
 import Caja from "./pages/Caja"
 import Reportes from "./pages/Reportes"
+import Acceso from "./pages/Acceso"
+import Configuracion from "./pages/Configuracion"
 import type {
   CajaResumen,
   DashboardAlerta,
@@ -134,6 +136,9 @@ const contenidoModulo: Record<
 }
 
 function App(): JSX.Element {
+  const [estadoAuth, setEstadoAuth] = useState<
+    "cargando" | "configurar" | "iniciar" | "autenticado"
+  >("cargando")
   const [pagina, setPagina] = useState<Pagina>("dashboard")
   const [alertas, setAlertas] = useState<DashboardAlerta[]>([])
   const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false)
@@ -168,6 +173,21 @@ function App(): JSX.Element {
     pagina !== "dashboard" && pagina !== "inventario"
       ? contenidoModulo[pagina]
       : null
+
+  useEffect(() => {
+    let activo = true
+    window.api.auth
+      .estado()
+      .then((estado) => {
+        if (activo) setEstadoAuth(estado.configurada ? "iniciar" : "configurar")
+      })
+      .catch(() => {
+        if (activo) setEstadoAuth("configurar")
+      })
+    return () => {
+      activo = false
+    }
+  }, [])
 
   useEffect(() => {
     let activo = true
@@ -220,9 +240,26 @@ function App(): JSX.Element {
     return `${dia}/${mes}/${anio}`
   }
 
+  if (estadoAuth === "cargando") {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#f1f4f5] text-sm text-slate-500">
+        Cargando FarmaControl...
+      </main>
+    )
+  }
+
+  if (estadoAuth === "configurar" || estadoAuth === "iniciar") {
+    return (
+      <Acceso
+        modo={estadoAuth}
+        onSuccess={() => setEstadoAuth("autenticado")}
+      />
+    )
+  }
+
   return (
     <div className="flex min-h-screen bg-[#f1f4f5]">
-      <aside className="flex w-72 shrink-0 flex-col border-r border-[#e1e9e8] bg-white px-5 py-6 text-[#334952]">
+      <aside className="flex w-72 shrink-0 flex-col border-r border-[#e1e9e8] bg-white px-5 py-6 text-[#334952] print:hidden">
         <div className="mb-8 flex items-center gap-3 px-2">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e4f5ef] text-2xl font-bold text-[#168a8a] shadow-sm">
             ✚
@@ -271,7 +308,7 @@ function App(): JSX.Element {
       </aside>
 
       <main className="min-w-0 flex-1 overflow-auto">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#dce4e7] bg-white px-8 py-4">
+        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#dce4e7] bg-white px-8 py-4 print:hidden">
           <label className="flex min-w-[260px] flex-1 items-center gap-3 rounded-xl border border-[#d1dcdf] bg-[#fafcfc] px-4 py-2.5 text-sm text-slate-400 shadow-sm focus-within:border-[#18a7a7] focus-within:ring-2 focus-within:ring-[#d9eeee]">
             <span className="text-lg">⌕</span>
             <input
@@ -412,6 +449,8 @@ function App(): JSX.Element {
             <Caja />
           ) : pagina === "reportes" ? (
             <Reportes />
+          ) : pagina === "configuracion" ? (
+            <Configuracion onCerrarSesion={() => setEstadoAuth("iniciar")} />
           ) : pagina === "proveedores" ? (
             <Proveedores />
           ) : pagina === "entradas" ? (

@@ -204,6 +204,10 @@ export interface ReporteResumen {
   }>
 }
 
+export interface AuthEstado {
+  configurada: boolean
+}
+
 export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
@@ -267,6 +271,15 @@ export interface FarmaControlAPI {
       desde: string
       hasta: string
     }) => Promise<ReporteResumen>
+  }
+  auth: {
+    estado: () => Promise<AuthEstado>
+    configurar: (password: string) => Promise<{ configurada: boolean }>
+    iniciar: (password: string) => Promise<{ autenticado: boolean }>
+    cambiar: (datos: {
+      actual: string
+      nueva: string
+    }) => Promise<{ cambiada: boolean }>
   }
 }
 

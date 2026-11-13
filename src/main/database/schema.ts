@@ -32,6 +32,15 @@ export function initializeDatabase(): void {
         fecha_creacion TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        nombre TEXT NOT NULL DEFAULT 'Administrador',
+        usuario TEXT NOT NULL UNIQUE DEFAULT 'Administrador',
+        password_hash TEXT,
+        password_salt TEXT,
+        fecha_creacion TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
 
 CREATE TABLE IF NOT EXISTS lotes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

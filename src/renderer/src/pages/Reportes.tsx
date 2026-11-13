@@ -3,7 +3,9 @@ import {
   AlertTriangle,
   CalendarDays,
   ChartNoAxesColumn,
+  Download,
   Package,
+  Printer,
   RefreshCw,
   TrendingUp
 } from "lucide-react"
@@ -84,6 +86,51 @@ function Reportes(): React.JSX.Element {
   function buscar(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault()
     void cargarReporte()
+  }
+
+  function exportarCsv(): void {
+    const filas = [
+      ["Reporte de FarmaControl"],
+      ["Periodo", `${desde} a ${hasta}`],
+      [],
+      ["VENTAS"],
+      ["Ventas completadas", resumen.ventas.cantidad],
+      ["Ventas canceladas", resumen.ventas.canceladas],
+      ["Ingresos totales", dinero(resumen.ventas.total_centavos)],
+      ["Efectivo", dinero(resumen.ventas.efectivo_centavos)],
+      ["Tarjeta", dinero(resumen.ventas.tarjeta_centavos)],
+      ["Transferencia", dinero(resumen.ventas.transferencia_centavos)],
+      [],
+      ["INVENTARIO"],
+      ["Productos activos", resumen.inventario.productos_activos],
+      ["Stock bajo", resumen.inventario.stock_bajo],
+      ["Agotados", resumen.inventario.agotados],
+      ["Lotes caducados", resumen.inventario.lotes_caducados],
+      ["Lotes por caducar", resumen.inventario.lotes_por_caducar],
+      [],
+      ["PRODUCTOS MÁS VENDIDOS"],
+      ["Producto", "Unidades", "Importe vendido"],
+      ...resumen.mas_vendidos.map((producto) => [
+        producto.producto_nombre,
+        producto.cantidad,
+        dinero(producto.total_centavos)
+      ])
+    ]
+
+    const csv = filas
+      .map((fila) =>
+        fila
+          .map((celda) => `"${String(celda ?? "").replaceAll('"', '""')}"`)
+          .join(",")
+      )
+      .join("\r\n")
+    const enlace = document.createElement("a")
+    enlace.href = URL.createObjectURL(
+      new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8" })
+    )
+    enlace.download = `reporte-farmacontrol-${desde}-a-${hasta}.csv`
+    enlace.click()
+    URL.revokeObjectURL(enlace.href)
   }
 
   const tarjetas: Array<{
@@ -174,6 +221,20 @@ function Reportes(): React.JSX.Element {
               className={`h-4 w-4 ${cargando ? "animate-spin" : ""}`}
             />
             {cargando ? "Actualizando..." : "Actualizar reporte"}
+          </button>
+          <button
+            type="button"
+            onClick={exportarCsv}
+            className="flex items-center gap-2 rounded-xl border border-[#bcd1d1] px-5 py-2.5 text-sm font-medium text-[#527070] hover:bg-[#f7fbfb] print:hidden"
+          >
+            <Download className="h-4 w-4" /> Descargar CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex items-center gap-2 rounded-xl border border-[#bcd1d1] px-5 py-2.5 text-sm font-medium text-[#527070] hover:bg-[#f7fbfb] print:hidden"
+          >
+            <Printer className="h-4 w-4" /> Imprimir
           </button>
         </div>
         <p className="mt-3 text-xs text-slate-400">
