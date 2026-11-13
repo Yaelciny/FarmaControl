@@ -11,13 +11,11 @@ import {
 } from "lucide-react"
 import type { ReporteResumen } from "../../../preload/global"
 import type { LucideIcon } from "lucide-react"
+import { fechaActualMexicoISO } from "../../../shared/fecha"
 
-const hoy = (): string => new Date().toISOString().slice(0, 10)
+const hoy = (): string => fechaActualMexicoISO()
 const inicioMes = (): string => {
-  const fecha = new Date()
-  return new Date(fecha.getFullYear(), fecha.getMonth(), 1)
-    .toISOString()
-    .slice(0, 10)
+  return `${fechaActualMexicoISO().slice(0, 7)}-01`
 }
 const dinero = (centavos: number): string =>
   `$${(centavos / 100).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`

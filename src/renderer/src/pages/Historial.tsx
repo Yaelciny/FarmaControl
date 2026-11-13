@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Eye, RotateCcw, Search, X } from "lucide-react"
 import type { VentaDetalle, VentaResumen } from "../../../preload/global"
+import { formatearFechaHoraMexico } from "../../../shared/fecha"
 
 function Historial(): React.JSX.Element {
   const [ventas, setVentas] = useState<VentaResumen[]>([])
@@ -131,7 +132,7 @@ function Historial(): React.JSX.Element {
                     #{venta.id}
                   </td>
                   <td className="px-4 py-4 text-slate-500">
-                    {venta.fecha.slice(0, 16).replace("T", " ")}
+                    {formatearFechaHoraMexico(venta.fecha)}
                   </td>
                   <td className="px-4 py-4 text-slate-600">
                     {metodo(venta.metodo_pago)}
@@ -192,7 +193,7 @@ function Historial(): React.JSX.Element {
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
                   {metodo(detalleVenta.metodo_pago)} ·{" "}
-                  {detalleVenta.fecha.slice(0, 16).replace("T", " ")}
+                  {formatearFechaHoraMexico(detalleVenta.fecha)}
                 </p>
               </div>
               <button

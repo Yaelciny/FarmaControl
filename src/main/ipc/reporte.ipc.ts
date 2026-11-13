@@ -58,7 +58,7 @@ export function registerReportesIpc(): void {
           COALESCE(SUM(CASE WHEN estado = 'completada' AND metodo_pago = 'tarjeta' THEN total_centavos ELSE 0 END), 0) AS tarjeta_centavos,
           COALESCE(SUM(CASE WHEN estado = 'completada' AND metodo_pago = 'transferencia' THEN total_centavos ELSE 0 END), 0) AS transferencia_centavos
         FROM ventas
-        WHERE date(fecha, 'localtime') BETWEEN ? AND ?
+        WHERE date(fecha, '-6 hours') BETWEEN ? AND ?
       `
       )
       .get(filtro.desde, filtro.hasta) as ReporteResumen["ventas"]
@@ -87,12 +87,12 @@ export function registerReportesIpc(): void {
           (SELECT COUNT(*) FROM lotes l
            INNER JOIN productos p ON p.id = l.producto_id
            WHERE p.activo = 1 AND l.cantidad_actual > 0
-             AND date(l.fecha_caducidad) < date('now', 'localtime')) AS lotes_caducados,
+             AND date(l.fecha_caducidad) < date('now', '-6 hours')) AS lotes_caducados,
           (SELECT COUNT(*) FROM lotes l
            INNER JOIN productos p ON p.id = l.producto_id
            WHERE p.activo = 1 AND l.cantidad_actual > 0
-             AND date(l.fecha_caducidad) BETWEEN date('now', 'localtime')
-                 AND date('now', 'localtime', '+30 days')) AS lotes_por_caducar
+             AND date(l.fecha_caducidad) BETWEEN date('now', '-6 hours')
+                 AND date('now', '-6 hours', '+30 days')) AS lotes_por_caducar
       `
       )
       .get() as ReporteResumen["inventario"]
@@ -107,7 +107,7 @@ export function registerReportesIpc(): void {
         INNER JOIN ventas v ON v.id = dv.venta_id
         INNER JOIN productos p ON p.id = dv.producto_id
         WHERE v.estado = 'completada'
-          AND date(v.fecha, 'localtime') BETWEEN ? AND ?
+          AND date(v.fecha, '-6 hours') BETWEEN ? AND ?
         GROUP BY dv.producto_id
         ORDER BY cantidad DESC, total_centavos DESC
         LIMIT 10

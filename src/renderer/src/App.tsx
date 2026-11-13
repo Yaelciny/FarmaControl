@@ -32,6 +32,7 @@ import Caja from "./pages/Caja"
 import Reportes from "./pages/Reportes"
 import Acceso from "./pages/Acceso"
 import Configuracion from "./pages/Configuracion"
+import { ZONA_HORARIA_MEXICO } from "../../shared/fecha"
 import type {
   CajaResumen,
   DashboardAlerta,
@@ -163,6 +164,7 @@ function App(): JSX.Element {
     caducidades_proximas: 0
   })
   const fechaHoy = new Intl.DateTimeFormat("es-MX", {
+    timeZone: ZONA_HORARIA_MEXICO,
     weekday: "long",
     day: "2-digit",
     month: "long",

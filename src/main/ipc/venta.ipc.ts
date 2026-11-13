@@ -112,7 +112,7 @@ export function registerVentasIpc(): void {
       .prepare(
         `
       SELECT p.id, p.nombre, p.codigo_barras, p.presentacion, p.precio_venta_centavos,
-             COALESCE(SUM(CASE WHEN l.fecha_caducidad >= date('now') THEN l.cantidad_actual ELSE 0 END), 0) AS stock_actual
+             COALESCE(SUM(CASE WHEN l.fecha_caducidad >= date('now', '-6 hours') THEN l.cantidad_actual ELSE 0 END), 0) AS stock_actual
       FROM productos p
       LEFT JOIN lotes l ON l.producto_id = p.id
       WHERE p.activo = 1
@@ -194,7 +194,7 @@ export function registerVentasIpc(): void {
         let pendiente = cantidad
         const lotes = db
           .prepare(
-            `SELECT id, cantidad_actual, costo_unitario_centavos FROM lotes WHERE producto_id = ? AND cantidad_actual > 0 AND fecha_caducidad >= date('now') ORDER BY fecha_caducidad ASC, id ASC`
+            `SELECT id, cantidad_actual, costo_unitario_centavos FROM lotes WHERE producto_id = ? AND cantidad_actual > 0 AND fecha_caducidad >= date('now', '-6 hours') ORDER BY fecha_caducidad ASC, id ASC`
           )
           .all(productoId) as Array<{
           id: number

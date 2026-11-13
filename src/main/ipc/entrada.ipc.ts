@@ -1,5 +1,6 @@
 import { ipcMain } from "electron"
 import { getDatabase } from "../database/connection"
+import { fechaActualMexicoISO } from "../../shared/fecha"
 
 interface CrearEntrada {
   producto_id: number
@@ -86,7 +87,7 @@ export function registerEntradasIpc(): void {
 
   ipcMain.handle("entradas:crear", (_event, datos: CrearEntrada) => {
     const entrada = validarEntrada(datos)
-    const fechaActual = new Date().toISOString().slice(0, 10)
+    const fechaActual = fechaActualMexicoISO()
 
     if (entrada.fecha_caducidad < fechaActual) {
       throw new Error("No se puede registrar mercancía ya caducada")

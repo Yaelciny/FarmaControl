@@ -15,12 +15,16 @@ import type {
   Producto,
   Proveedor
 } from "../../../preload/global"
+import {
+  fechaActualMexicoISO,
+  formatearFechaHoraMexico
+} from "../../../shared/fecha"
 
 const formularioInicial = {
   producto_id: "",
   proveedor_id: "",
   numero_lote: "",
-  fecha_llegada: new Date().toISOString().slice(0, 10),
+  fecha_llegada: fechaActualMexicoISO(),
   fecha_caducidad: "",
   costo_unitario: "",
   cantidad: ""
@@ -238,7 +242,7 @@ function Entradas({
       .includes(busqueda.toLowerCase())
   )
 
-  const hoy = new Date().toISOString().slice(0, 10)
+  const hoy = fechaActualMexicoISO()
 
   return (
     <div className="space-y-6">
@@ -500,7 +504,7 @@ function Entradas({
                   "Costo unitario",
                   `$${(detalle.costo_unitario_centavos / 100).toFixed(2)} MXN`
                 ],
-                ["Fecha de registro", detalle.fecha]
+                ["Fecha de registro", formatearFechaHoraMexico(detalle.fecha)]
               ].map(([etiqueta, valor]) => (
                 <div key={etiqueta} className="rounded-xl bg-[#f7f9f9] p-3">
                   <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">

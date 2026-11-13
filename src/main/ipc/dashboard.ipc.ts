@@ -37,7 +37,7 @@ export function registerDashboardIpc(): void {
           (SELECT COALESCE(SUM(total_centavos), 0)
            FROM ventas
            WHERE estado = 'completada'
-             AND date(fecha, 'localtime') = date('now', 'localtime')) AS ventas_hoy_centavos,
+              AND date(fecha, '-6 hours') = date('now', '-6 hours')) AS ventas_hoy_centavos,
           (SELECT COUNT(*) FROM productos WHERE activo = 1) AS medicamentos_registrados,
           (SELECT COUNT(*) FROM (
              SELECT p.id, p.stock_minimo, COALESCE(SUM(l.cantidad_actual), 0) AS stock_actual
@@ -52,7 +52,7 @@ export function registerDashboardIpc(): void {
            INNER JOIN productos p ON p.id = l.producto_id
            WHERE p.activo = 1
              AND l.cantidad_actual > 0
-             AND date(l.fecha_caducidad) BETWEEN date('now', 'localtime') AND date('now', 'localtime', '+30 days')) AS caducidades_proximas
+             AND date(l.fecha_caducidad) BETWEEN date('now', '-6 hours') AND date('now', '-6 hours', '+30 days')) AS caducidades_proximas
       `
         )
         .get() as DashboardResumen
@@ -69,7 +69,7 @@ export function registerDashboardIpc(): void {
         INNER JOIN productos p ON p.id = l.producto_id
         WHERE p.activo = 1
           AND l.cantidad_actual > 0
-          AND date(l.fecha_caducidad) < date('now', 'localtime')
+          AND date(l.fecha_caducidad) < date('now', '-6 hours')
         ORDER BY date(l.fecha_caducidad) ASC, p.nombre ASC
       `
       )
@@ -109,8 +109,8 @@ export function registerDashboardIpc(): void {
         INNER JOIN productos p ON p.id = l.producto_id
         WHERE p.activo = 1
           AND l.cantidad_actual > 0
-          AND date(l.fecha_caducidad) BETWEEN date('now', 'localtime')
-              AND date('now', 'localtime', '+30 days')
+          AND date(l.fecha_caducidad) BETWEEN date('now', '-6 hours')
+              AND date('now', '-6 hours', '+30 days')
         ORDER BY date(l.fecha_caducidad) ASC, p.nombre ASC
       `
       )

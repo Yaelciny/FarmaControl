@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Calculator, History, WalletCards } from "lucide-react"
 import type { CajaCorte, CajaResumen } from "../../../preload/global"
+import { formatearFechaHoraMexico } from "../../../shared/fecha"
 
 const estadoInicial: CajaResumen = {
   corte: null,
@@ -17,8 +18,7 @@ const moneda = (centavos: number): string =>
     maximumFractionDigits: 2
   })}`
 
-const fecha = (valor: string | null): string =>
-  valor ? valor.slice(0, 16).replace("T", " ") : "—"
+const fecha = (valor: string | null): string => formatearFechaHoraMexico(valor)
 
 function Caja(): React.JSX.Element {
   const [estado, setEstado] = useState<CajaResumen>(estadoInicial)
