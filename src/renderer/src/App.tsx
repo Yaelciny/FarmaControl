@@ -421,10 +421,10 @@ function App(): JSX.Element {
                   ? contextoAlerta.alerta.producto_id
                   : null
               }
-              busquedaInicial={
+              loteIdInicial={
                 contextoAlerta?.accion === "lote"
-                  ? `${contextoAlerta.alerta.producto_nombre} ${contextoAlerta.alerta.numero_lote ?? ""}`
-                  : ""
+                  ? contextoAlerta.alerta.lote_id
+                  : null
               }
               abrirFormularioInicial={contextoAlerta?.accion === "entrada"}
             />

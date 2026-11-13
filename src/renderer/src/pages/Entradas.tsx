@@ -28,12 +28,14 @@ const formularioInicial = {
 
 interface EntradasProps {
   productoIdInicial?: number | null
+  loteIdInicial?: number | null
   busquedaInicial?: string
   abrirFormularioInicial?: boolean
 }
 
 function Entradas({
   productoIdInicial = null,
+  loteIdInicial = null,
   busquedaInicial = "",
   abrirFormularioInicial = false
 }: EntradasProps): React.JSX.Element {
@@ -94,19 +96,39 @@ function Entradas({
 
   useEffect(() => {
     const temporizador = window.setTimeout(() => {
-      if (busquedaInicial) setBusqueda(busquedaInicial)
-      if (productoIdInicial === null || !abrirFormularioInicial) return
-      if (productos.some((producto) => producto.id === productoIdInicial)) {
-        setFormulario((actual) => ({
-          ...actual,
-          producto_id: String(productoIdInicial)
-        }))
-        setError("")
-        setModalAbierto(true)
+      if (loteIdInicial !== null) {
+        const entrada = entradas.find((item) => item.lote_id === loteIdInicial)
+        if (entrada) {
+          setBusqueda(entrada.numero_lote)
+          setError("")
+        } else {
+          setError("No se encontró el lote seleccionado")
+        }
+      } else {
+        if (busquedaInicial) setBusqueda(busquedaInicial)
+        if (
+          productoIdInicial !== null &&
+          abrirFormularioInicial &&
+          productos.some((producto) => producto.id === productoIdInicial)
+        ) {
+          setFormulario((actual) => ({
+            ...actual,
+            producto_id: String(productoIdInicial)
+          }))
+          setError("")
+          setModalAbierto(true)
+        }
       }
     }, 0)
     return () => window.clearTimeout(temporizador)
-  }, [abrirFormularioInicial, busquedaInicial, productoIdInicial, productos])
+  }, [
+    abrirFormularioInicial,
+    busquedaInicial,
+    entradas,
+    loteIdInicial,
+    productoIdInicial,
+    productos
+  ])
 
   function cerrarModal(): void {
     setModalAbierto(false)
