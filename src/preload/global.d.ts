@@ -181,6 +181,29 @@ export interface CajaResumen {
   efectivo_esperado_centavos: number
 }
 
+export interface ReporteResumen {
+  ventas: {
+    cantidad: number
+    canceladas: number
+    total_centavos: number
+    efectivo_centavos: number
+    tarjeta_centavos: number
+    transferencia_centavos: number
+  }
+  inventario: {
+    productos_activos: number
+    stock_bajo: number
+    agotados: number
+    lotes_caducados: number
+    lotes_por_caducar: number
+  }
+  mas_vendidos: Array<{
+    producto_nombre: string
+    cantidad: number
+    total_centavos: number
+  }>
+}
+
 export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
@@ -238,6 +261,12 @@ export interface FarmaControlAPI {
       observacion: string | null
     }) => Promise<{ id: number; diferencia_centavos: number }>
     historial: () => Promise<CajaCorte[]>
+  }
+  reportes: {
+    resumen: (filtro: {
+      desde: string
+      hasta: string
+    }) => Promise<ReporteResumen>
   }
 }
 

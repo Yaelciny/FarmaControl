@@ -29,6 +29,7 @@ import Salidas from "./pages/Salidas"
 import Ventas from "./pages/Ventas"
 import Historial from "./pages/Historial"
 import Caja from "./pages/Caja"
+import Reportes from "./pages/Reportes"
 import type {
   CajaResumen,
   DashboardAlerta,
@@ -409,6 +410,8 @@ function App(): JSX.Element {
             <Historial />
           ) : pagina === "caja" ? (
             <Caja />
+          ) : pagina === "reportes" ? (
+            <Reportes />
           ) : pagina === "proveedores" ? (
             <Proveedores />
           ) : pagina === "entradas" ? (

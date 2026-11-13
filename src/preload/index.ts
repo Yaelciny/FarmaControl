@@ -70,6 +70,10 @@ const api: FarmaControlAPI = {
       observacion: string | null
     }) => ipcRenderer.invoke("caja:cerrar", datos),
     historial: () => ipcRenderer.invoke("caja:historial")
+  },
+  reportes: {
+    resumen: (filtro: { desde: string; hasta: string }) =>
+      ipcRenderer.invoke("reportes:resumen", filtro)
   }
 }
 
