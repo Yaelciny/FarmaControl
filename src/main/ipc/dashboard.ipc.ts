@@ -6,6 +6,28 @@ export interface DashboardResumen {
   medicamentos_registrados: number
   stock_bajo: number
   caducidades_proximas: number
+  ventas_semana_centavos: number
+  ventas_semana_cantidad: number
+  ventas_por_dia: Array<{
+    fecha: string
+    cantidad: number
+    total_centavos: number
+  }>
+  productos_recientes: Array<{
+    id: number
+    producto_nombre: string
+    proveedor_nombre: string
+    cantidad: number
+    numero_lote: string
+    fecha_llegada: string
+    fecha_caducidad: string
+  }>
+  ventas_recientes: Array<{
+    id: number
+    fecha: string
+    total_centavos: number
+    metodo_pago: string
+  }>
 }
 
 export interface DashboardAlerta {
@@ -27,12 +49,10 @@ export interface DashboardAlerta {
 export function registerDashboardIpc(): void {
   const db = getDatabase()
 
-  ipcMain.handle(
-    "dashboard:resumen",
-    () =>
-      db
-        .prepare(
-          `
+  ipcMain.handle("dashboard:resumen", () => {
+    const contadores = db
+      .prepare(
+        `
         SELECT
           (SELECT COALESCE(SUM(total_centavos), 0)
            FROM ventas
@@ -54,9 +74,82 @@ export function registerDashboardIpc(): void {
              AND l.cantidad_actual > 0
              AND date(l.fecha_caducidad) BETWEEN date('now', '-6 hours') AND date('now', '-6 hours', '+30 days')) AS caducidades_proximas
       `
-        )
-        .get() as DashboardResumen
-  )
+      )
+      .get() as Pick<
+      DashboardResumen,
+      | "ventas_hoy_centavos"
+      | "medicamentos_registrados"
+      | "stock_bajo"
+      | "caducidades_proximas"
+    >
+
+    const semana = db
+      .prepare(
+        `
+        SELECT COUNT(*) AS ventas_semana_cantidad,
+               COALESCE(SUM(total_centavos), 0) AS ventas_semana_centavos
+        FROM ventas
+        WHERE estado = 'completada'
+          AND date(fecha, '-6 hours') BETWEEN date('now', '-6 hours', '-6 days')
+              AND date('now', '-6 hours')
+      `
+      )
+      .get() as Pick<
+      DashboardResumen,
+      "ventas_semana_centavos" | "ventas_semana_cantidad"
+    >
+
+    const ventasPorDia = db
+      .prepare(
+        `
+        SELECT date(fecha, '-6 hours') AS fecha, COUNT(*) AS cantidad,
+               COALESCE(SUM(total_centavos), 0) AS total_centavos
+        FROM ventas
+        WHERE estado = 'completada'
+          AND date(fecha, '-6 hours') BETWEEN date('now', '-6 hours', '-6 days')
+              AND date('now', '-6 hours')
+        GROUP BY date(fecha, '-6 hours')
+        ORDER BY fecha ASC
+      `
+      )
+      .all() as DashboardResumen["ventas_por_dia"]
+
+    const productosRecientes = db
+      .prepare(
+        `
+        SELECT m.id, p.nombre AS producto_nombre, COALESCE(pr.nombre, 'Sin proveedor') AS proveedor_nombre,
+               m.cantidad, l.numero_lote, l.fecha_llegada, l.fecha_caducidad
+        FROM movimientos m
+        INNER JOIN lotes l ON l.id = m.lote_id
+        INNER JOIN productos p ON p.id = l.producto_id
+        LEFT JOIN proveedores pr ON pr.id = l.proveedor_id
+        WHERE m.tipo = 'entrada' AND m.cancelado = 0
+        ORDER BY m.fecha DESC, m.id DESC
+        LIMIT 5
+      `
+      )
+      .all() as DashboardResumen["productos_recientes"]
+
+    const ventasRecientes = db
+      .prepare(
+        `
+        SELECT id, fecha, total_centavos, metodo_pago
+        FROM ventas
+        WHERE estado = 'completada'
+        ORDER BY fecha DESC, id DESC
+        LIMIT 5
+      `
+      )
+      .all() as DashboardResumen["ventas_recientes"]
+
+    return {
+      ...contadores,
+      ...semana,
+      ventas_por_dia: ventasPorDia,
+      productos_recientes: productosRecientes,
+      ventas_recientes: ventasRecientes
+    } satisfies DashboardResumen
+  })
 
   ipcMain.handle("dashboard:alertas", () => {
     const alertas: DashboardAlerta[] = []

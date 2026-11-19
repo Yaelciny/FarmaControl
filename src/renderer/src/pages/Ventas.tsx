@@ -66,10 +66,6 @@ function Ventas(): React.JSX.Element {
         (articulo) => articulo.producto.id === producto.id
       )
       if (existente) {
-        if (existente.cantidad >= producto.stock_actual) {
-          setError("No puedes agregar más unidades de las disponibles")
-          return actual
-        }
         return actual.map((articulo) =>
           articulo.producto.id === producto.id
             ? { ...articulo, cantidad: articulo.cantidad + 1 }
@@ -83,10 +79,7 @@ function Ventas(): React.JSX.Element {
   function cambiarCantidad(productoId: number, cantidad: number): void {
     const articulo = carrito.find((item) => item.producto.id === productoId)
     if (!articulo) return
-    const nuevaCantidad = Math.max(
-      1,
-      Math.min(cantidad, articulo.producto.stock_actual)
-    )
+    const nuevaCantidad = Math.max(1, cantidad)
     setCarrito((actual) =>
       actual.map((item) =>
         item.producto.id === productoId
@@ -190,8 +183,16 @@ function Ventas(): React.JSX.Element {
               >
                 <div className="flex items-start justify-between gap-2">
                   <PackageIcon />
-                  <span className="rounded-full bg-[#e9f7f1] px-2 py-1 text-xs font-semibold text-[#29835f]">
-                    {producto.stock_actual} disponibles
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                      producto.stock_actual > 0
+                        ? "bg-[#e9f7f1] text-[#29835f]"
+                        : "bg-[#fff0f0] text-[#b06b76]"
+                    }`}
+                  >
+                    {producto.stock_actual > 0
+                      ? `${producto.stock_actual} registradas`
+                      : "0 registradas · verificar"}
                   </span>
                 </div>
                 <p className="mt-3 font-semibold text-[#334952]">

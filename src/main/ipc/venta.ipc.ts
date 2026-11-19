@@ -117,8 +117,7 @@ export function registerVentasIpc(): void {
       LEFT JOIN lotes l ON l.producto_id = p.id
       WHERE p.activo = 1
         AND (p.nombre LIKE ? OR COALESCE(p.codigo_barras, '') LIKE ? OR COALESCE(p.categoria, '') LIKE ?)
-      GROUP BY p.id
-      HAVING stock_actual > 0
+       GROUP BY p.id
       ORDER BY p.nombre ASC
       LIMIT 30
     `
@@ -205,7 +204,9 @@ export function registerVentasIpc(): void {
           lotes.reduce((total, lote) => total + lote.cantidad_actual, 0) <
           cantidad
         )
-          throw new Error("Stock insuficiente para completar la venta")
+          throw new Error(
+            "No hay existencias suficientes para completar la venta"
+          )
         for (const lote of lotes) {
           if (pendiente === 0) break
           const descontar = Math.min(pendiente, lote.cantidad_actual)

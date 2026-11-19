@@ -173,7 +173,12 @@ function App(): JSX.Element {
     ventas_hoy_centavos: 0,
     medicamentos_registrados: 0,
     stock_bajo: 0,
-    caducidades_proximas: 0
+    caducidades_proximas: 0,
+    ventas_semana_centavos: 0,
+    ventas_semana_cantidad: 0,
+    ventas_por_dia: [],
+    productos_recientes: [],
+    ventas_recientes: []
   })
   const fechaHoy = new Intl.DateTimeFormat("es-MX", {
     timeZone: ZONA_HORARIA_MEXICO,
@@ -791,10 +796,17 @@ function App(): JSX.Element {
                       Productos recientes
                     </h3>
                     <p className="mt-1 text-sm text-slate-400">
-                      Los medicamentos aparecerán aquí al registrarlos.
+                      Últimas entradas de mercancía registradas.
                     </p>
                   </div>
                   <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPagina("ventas")}
+                      className="flex items-center gap-2 rounded-xl bg-[#18a7a7] px-4 py-2 text-sm font-medium text-white hover:bg-[#168f8f]"
+                    >
+                      <ShoppingCart className="h-4 w-4" /> Ir a punto de venta
+                    </button>
                     <button
                       type="button"
                       onClick={() => setPagina("entradas")}
@@ -812,28 +824,97 @@ function App(): JSX.Element {
                   </div>
                 </div>
                 <div className="mt-5 overflow-hidden rounded-xl border border-[#e1e7e8]">
-                  <div className="grid grid-cols-4 bg-[#f5f7f7] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <span>Código</span>
+                  <div className="grid grid-cols-5 bg-[#f5f7f7] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <span>Medicamento</span>
-                    <span>Categoría</span>
-                    <span>Estado</span>
+                    <span>Proveedor</span>
+                    <span>Piezas</span>
+                    <span>Pedido</span>
+                    <span>Caducidad</span>
                   </div>
-                  <div className="px-4 py-10 text-center text-sm text-slate-400">
-                    No hay medicamentos registrados todavía.
-                  </div>
+                  {resumen.productos_recientes.length > 0 ? (
+                    resumen.productos_recientes.map((producto) => (
+                      <button
+                        key={producto.id}
+                        type="button"
+                        onClick={() => setPagina("entradas")}
+                        className="grid w-full grid-cols-5 border-t border-[#edf0f1] px-4 py-3 text-left text-sm hover:bg-[#fbfdfd]"
+                      >
+                        <span className="font-semibold text-[#334952]">
+                          {producto.producto_nombre}
+                        </span>
+                        <span className="text-slate-500">
+                          {producto.proveedor_nombre}
+                        </span>
+                        <span className="font-semibold text-[#29835f]">
+                          +{producto.cantidad}
+                        </span>
+                        <span className="font-mono text-xs text-slate-500">
+                          {producto.numero_lote}
+                        </span>
+                        <span className="text-slate-500">
+                          {producto.fecha_caducidad}
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-10 text-center text-sm text-slate-400">
+                      Todavía no hay entradas registradas.
+                    </div>
+                  )}
                 </div>
               </section>
 
               <div className="mt-6 grid gap-6 lg:grid-cols-2">
                 <section className="rounded-2xl border border-[#dce4e7] bg-white p-5 shadow-sm">
-                  <h3 className="text-xl font-bold text-[#334952]">
-                    Resumen de ventas
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-400">
-                    Tus ventas semanales aparecerán aquí.
-                  </p>
-                  <div className="mt-5 flex h-28 items-center justify-center rounded-xl bg-[#f7f9f9] text-sm text-slate-400">
-                    Aún no hay datos para mostrar
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold text-[#334952]">
+                        Resumen de ventas
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-400">
+                        Últimos 7 días.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPagina("reportes")}
+                      className="text-xs font-semibold text-[#168a8a] hover:underline"
+                    >
+                      Ver reportes
+                    </button>
+                  </div>
+                  <div className="mt-5 flex items-end justify-between rounded-xl bg-[#f7f9f9] p-4">
+                    <div>
+                      <p className="text-xs text-slate-400">Total vendido</p>
+                      <p className="mt-1 text-2xl font-bold text-[#334952]">
+                        ${(resumen.ventas_semana_centavos / 100).toFixed(2)}
+                      </p>
+                    </div>
+                    <p className="text-sm text-slate-500">
+                      {resumen.ventas_semana_cantidad} ventas
+                    </p>
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {resumen.ventas_recientes.slice(0, 3).map((venta) => (
+                      <button
+                        type="button"
+                        key={venta.id}
+                        onClick={() => setPagina("historial")}
+                        className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left hover:bg-[#f7f9f9]"
+                      >
+                        <span>
+                          <span className="block text-sm font-semibold text-[#334952]">
+                            Venta #{venta.id}
+                          </span>
+                          <span className="text-xs text-slate-400">
+                            {venta.metodo_pago}
+                          </span>
+                        </span>
+                        <span className="text-sm font-semibold text-[#334952]">
+                          ${(venta.total_centavos / 100).toFixed(2)}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </section>
                 <section className="rounded-2xl border border-[#dce4e7] bg-white p-5 shadow-sm">
@@ -843,8 +924,41 @@ function App(): JSX.Element {
                   <p className="mt-1 text-sm text-slate-400">
                     Productos que requieren tu atención.
                   </p>
-                  <div className="mt-5 flex h-28 items-center justify-center rounded-xl bg-[#f7f9f9] text-sm text-slate-400">
-                    No hay alertas pendientes
+                  <div className="mt-4 space-y-2">
+                    {alertas.slice(0, 4).map((alerta) => (
+                      <button
+                        type="button"
+                        key={alerta.id}
+                        onClick={() => verAlerta(alerta)}
+                        className="flex w-full items-center justify-between rounded-lg bg-[#f7f9f9] px-3 py-2 text-left hover:bg-[#edf5f4]"
+                      >
+                        <span>
+                          <span className="block text-sm font-semibold text-[#334952]">
+                            {alerta.titulo}
+                          </span>
+                          <span className="block text-xs text-slate-500">
+                            {alerta.descripcion}
+                          </span>
+                        </span>
+                        <span className="text-xs font-semibold text-[#168a8a]">
+                          Ver
+                        </span>
+                      </button>
+                    ))}
+                    {alertas.length === 0 && (
+                      <div className="rounded-xl bg-[#e9f7f1] px-4 py-6 text-center text-sm text-[#29835f]">
+                        No hay alertas pendientes.
+                      </div>
+                    )}
+                    {alertas.length > 4 && (
+                      <button
+                        type="button"
+                        onClick={() => setNotificacionesAbiertas(true)}
+                        className="text-xs font-semibold text-[#168a8a] hover:underline"
+                      >
+                        Ver todas las alertas
+                      </button>
+                    )}
                   </div>
                 </section>
               </div>

@@ -138,6 +138,28 @@ export interface DashboardResumen {
   medicamentos_registrados: number
   stock_bajo: number
   caducidades_proximas: number
+  ventas_semana_centavos: number
+  ventas_semana_cantidad: number
+  ventas_por_dia: Array<{
+    fecha: string
+    cantidad: number
+    total_centavos: number
+  }>
+  productos_recientes: Array<{
+    id: number
+    producto_nombre: string
+    proveedor_nombre: string
+    cantidad: number
+    numero_lote: string
+    fecha_llegada: string
+    fecha_caducidad: string
+  }>
+  ventas_recientes: Array<{
+    id: number
+    fecha: string
+    total_centavos: number
+    metodo_pago: string
+  }>
 }
 
 export interface DashboardAlerta {
