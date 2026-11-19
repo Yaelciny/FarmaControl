@@ -7,14 +7,16 @@ import { mkdirSync } from "fs"
 
 let db: Database.Database | null = null
 
+export function getDatabasePath(): string {
+  const dataPath = join(app.getPath("userData"), "data")
+  mkdirSync(dataPath, { recursive: true })
+  return join(dataPath, "farmacontrol.db")
+}
+
 export function getDatabase(): Database.Database {
   if (db) return db
 
-  const dataPath = join(app.getPath("userData"), "data")
-
-  mkdirSync(dataPath, { recursive: true })
-
-  const dbPath = join(dataPath, "farmacontrol.db")
+  const dbPath = getDatabasePath()
 
   db = new Database(dbPath)
 

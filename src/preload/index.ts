@@ -96,6 +96,10 @@ const api: FarmaControlAPI = {
   },
   busqueda: {
     global: (termino: string) => ipcRenderer.invoke("busqueda:global", termino)
+  },
+  respaldo: {
+    crear: () => ipcRenderer.invoke("respaldo:crear"),
+    restaurar: () => ipcRenderer.invoke("respaldo:restaurar")
   }
 }
 

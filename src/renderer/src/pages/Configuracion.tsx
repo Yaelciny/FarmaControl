@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react"
-import { KeyRound, LogOut } from "lucide-react"
+import { Download, KeyRound, LogOut, Upload } from "lucide-react"
 
 interface ConfiguracionProps {
   onCerrarSesion: () => void
@@ -14,6 +14,8 @@ function Configuracion({
   const [mensaje, setMensaje] = useState("")
   const [error, setError] = useState("")
   const [cargando, setCargando] = useState(false)
+  const [respaldoMensaje, setRespaldoMensaje] = useState("")
+  const [respaldoError, setRespaldoError] = useState("")
 
   async function cambiarPassword(
     event: FormEvent<HTMLFormElement>
@@ -38,6 +40,42 @@ function Configuracion({
       )
     } finally {
       setCargando(false)
+    }
+  }
+
+  async function crearRespaldo(): Promise<void> {
+    setRespaldoMensaje("")
+    setRespaldoError("")
+    try {
+      const resultado = await window.api.respaldo.crear()
+      if (!resultado.cancelado && resultado.ruta) {
+        setRespaldoMensaje(
+          `Respaldo creado correctamente en: ${resultado.ruta}`
+        )
+      }
+    } catch (err) {
+      setRespaldoError(
+        err instanceof Error ? err.message : "No se pudo crear el respaldo"
+      )
+    }
+  }
+
+  async function restaurarRespaldo(): Promise<void> {
+    if (
+      !window.confirm(
+        "La información actual será reemplazada. Antes se creará un respaldo automático. ¿Deseas continuar?"
+      )
+    ) {
+      return
+    }
+    setRespaldoMensaje("")
+    setRespaldoError("")
+    try {
+      await window.api.respaldo.restaurar()
+    } catch (err) {
+      setRespaldoError(
+        err instanceof Error ? err.message : "No se pudo restaurar el respaldo"
+      )
     }
   }
 
@@ -129,6 +167,51 @@ function Configuracion({
             </button>
           </div>
         </form>
+      </section>
+      <section className="max-w-2xl rounded-2xl border border-[#dce4e7] bg-white p-6 shadow-sm">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e4f1f1] text-[#168a8a]">
+            <Download className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-[#334952]">
+              Respaldo de información
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Guarda medicamentos, entradas, ventas, cortes y configuración.
+            </p>
+          </div>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => void crearRespaldo()}
+            className="flex items-center gap-2 rounded-xl bg-[#18a7a7] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#168f8f]"
+          >
+            <Download className="h-4 w-4" /> Crear respaldo
+          </button>
+          <button
+            type="button"
+            onClick={() => void restaurarRespaldo()}
+            className="flex items-center gap-2 rounded-xl border border-[#bcd1d1] px-4 py-2.5 text-sm font-medium text-[#527070] hover:bg-[#f7fbfb]"
+          >
+            <Upload className="h-4 w-4" /> Restaurar respaldo
+          </button>
+        </div>
+        {respaldoMensaje && (
+          <p className="mt-4 rounded-xl bg-[#e5f7ef] p-3 text-sm text-[#29835f]">
+            {respaldoMensaje}
+          </p>
+        )}
+        {respaldoError && (
+          <p className="mt-4 rounded-xl bg-[#fff5f5] p-3 text-sm text-red-600">
+            {respaldoError}
+          </p>
+        )}
+        <p className="mt-4 text-xs text-slate-400">
+          Al restaurar, se crea una copia automática de la base actual y la
+          aplicación se reinicia para cargar la información restaurada.
+        </p>
       </section>
       <section className="max-w-2xl rounded-2xl border border-[#f0d9dc] bg-[#fff9f9] p-6">
         <h3 className="font-bold text-[#334952]">Sesión</h3>

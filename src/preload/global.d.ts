@@ -332,6 +332,10 @@ export interface FarmaControlAPI {
   busqueda: {
     global: (termino: string) => Promise<ResultadoBusqueda[]>
   }
+  respaldo: {
+    crear: () => Promise<{ cancelado: boolean; ruta: string | null }>
+    restaurar: () => Promise<{ cancelado: boolean; restaurado?: boolean }>
+  }
 }
 
 declare global {
