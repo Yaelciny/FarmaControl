@@ -208,6 +208,21 @@ export interface AuthEstado {
   configurada: boolean
 }
 
+export interface ResultadoBusqueda {
+  id: string
+  tipo: "producto" | "lote"
+  titulo: string
+  detalle: string
+  producto_id: number
+  lote_id: number | null
+  stock_actual: number | null
+  stock_minimo: number | null
+  precio_venta_centavos: number | null
+  presentacion: string | null
+  fecha_caducidad: string | null
+  cantidad_actual: number | null
+}
+
 export interface FarmaControlAPI {
   productos: {
     listar: () => Promise<Producto[]>
@@ -280,6 +295,9 @@ export interface FarmaControlAPI {
       actual: string
       nueva: string
     }) => Promise<{ cambiada: boolean }>
+  }
+  busqueda: {
+    global: (termino: string) => Promise<ResultadoBusqueda[]>
   }
 }
 

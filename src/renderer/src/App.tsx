@@ -1,5 +1,5 @@
 import type { JSX } from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   ArrowRight,
   AlertTriangle,
@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Package,
   Plus,
+  Search,
   Settings,
   ShoppingCart,
   SlidersHorizontal,
@@ -36,7 +37,8 @@ import { ZONA_HORARIA_MEXICO } from "../../shared/fecha"
 import type {
   CajaResumen,
   DashboardAlerta,
-  DashboardResumen
+  DashboardResumen,
+  ResultadoBusqueda
 } from "../../preload/global"
 
 type Pagina =
@@ -143,12 +145,22 @@ function App(): JSX.Element {
   const [pagina, setPagina] = useState<Pagina>("dashboard")
   const [alertas, setAlertas] = useState<DashboardAlerta[]>([])
   const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false)
+  const [perfilAbierto, setPerfilAbierto] = useState(false)
+  const [terminoBusqueda, setTerminoBusqueda] = useState("")
+  const [resultadosBusqueda, setResultadosBusqueda] = useState<
+    ResultadoBusqueda[]
+  >([])
+  const busquedaRef = useRef<HTMLDivElement>(null)
+  const notificacionesRef = useRef<HTMLDivElement>(null)
+  const perfilRef = useRef<HTMLDivElement>(null)
   const [alertaSeleccionada, setAlertaSeleccionada] =
     useState<DashboardAlerta | null>(null)
   const [contextoAlerta, setContextoAlerta] = useState<{
     alerta: DashboardAlerta
     accion: AccionAlerta
   } | null>(null)
+  const [resultadoSeleccionado, setResultadoSeleccionado] =
+    useState<ResultadoBusqueda | null>(null)
   const [caja, setCaja] = useState<CajaResumen>({
     corte: null,
     ventas_efectivo_centavos: 0,
@@ -189,6 +201,39 @@ function App(): JSX.Element {
     return () => {
       activo = false
     }
+  }, [])
+
+  useEffect(() => {
+    const texto = terminoBusqueda.trim()
+    const temporizador = window.setTimeout(() => {
+      if (texto.length < 2) {
+        setResultadosBusqueda([])
+        return
+      }
+      void window.api.busqueda
+        .global(texto)
+        .then((resultados) => setResultadosBusqueda(resultados))
+        .catch(() => setResultadosBusqueda([]))
+    }, 250)
+    return () => window.clearTimeout(temporizador)
+  }, [terminoBusqueda])
+
+  useEffect(() => {
+    const cerrarMenusFuera = (event: MouseEvent): void => {
+      const objetivo = event.target
+      if (!(objetivo instanceof Node)) return
+      if (!busquedaRef.current?.contains(objetivo)) {
+        setResultadosBusqueda([])
+      }
+      if (!notificacionesRef.current?.contains(objetivo)) {
+        setNotificacionesAbiertas(false)
+      }
+      if (!perfilRef.current?.contains(objetivo)) {
+        setPerfilAbierto(false)
+      }
+    }
+    document.addEventListener("mousedown", cerrarMenusFuera)
+    return () => document.removeEventListener("mousedown", cerrarMenusFuera)
   }, [])
 
   useEffect(() => {
@@ -235,6 +280,13 @@ function App(): JSX.Element {
     setContextoAlerta({ alerta, accion })
     setPagina(destino)
     setAlertaSeleccionada(null)
+  }
+
+  const seleccionarResultado = (resultado: ResultadoBusqueda): void => {
+    setResultadoSeleccionado(resultado)
+    setTerminoBusqueda("")
+    setResultadosBusqueda([])
+    setPagina(resultado.tipo === "producto" ? "inventario" : "entradas")
   }
 
   const fechaAlerta = (fecha: string): string => {
@@ -311,14 +363,87 @@ function App(): JSX.Element {
 
       <main className="min-w-0 flex-1 overflow-auto">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#dce4e7] bg-white px-8 py-4 print:hidden">
-          <label className="flex min-w-[260px] flex-1 items-center gap-3 rounded-xl border border-[#d1dcdf] bg-[#fafcfc] px-4 py-2.5 text-sm text-slate-400 shadow-sm focus-within:border-[#18a7a7] focus-within:ring-2 focus-within:ring-[#d9eeee]">
-            <span className="text-lg">⌕</span>
-            <input
-              className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-slate-400"
-              placeholder="Buscar medicamento, código o lote..."
-            />
-          </label>
-          <div className="flex items-center gap-4 text-sm text-[#435862]">
+          <div ref={busquedaRef} className="relative min-w-[260px] flex-1">
+            <label className="flex items-center gap-3 rounded-xl border border-[#d1dcdf] bg-[#fafcfc] px-4 py-2.5 text-sm text-slate-400 shadow-sm focus-within:border-[#18a7a7] focus-within:ring-2 focus-within:ring-[#d9eeee]">
+              <Search className="h-5 w-5" />
+              <input
+                value={terminoBusqueda}
+                onChange={(event) => setTerminoBusqueda(event.target.value)}
+                className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-slate-400"
+                placeholder="Buscar medicamento, código o lote..."
+              />
+            </label>
+            {resultadosBusqueda.length > 0 && (
+              <div className="absolute left-0 right-0 top-14 z-50 overflow-hidden rounded-2xl border border-[#dce4e7] bg-white shadow-xl">
+                {resultadosBusqueda.map((resultado) => {
+                  const disponibles =
+                    resultado.tipo === "producto"
+                      ? (resultado.stock_actual ?? 0)
+                      : (resultado.cantidad_actual ?? 0)
+                  const estado =
+                    disponibles === 0
+                      ? "Agotado"
+                      : resultado.tipo === "producto" &&
+                          resultado.stock_minimo !== null &&
+                          disponibles <= resultado.stock_minimo
+                        ? "Stock bajo"
+                        : "Disponible"
+                  const estadoColor =
+                    estado === "Agotado"
+                      ? "text-[#b06b76]"
+                      : estado === "Stock bajo"
+                        ? "text-[#b18435]"
+                        : "text-[#29835f]"
+                  return (
+                    <button
+                      type="button"
+                      key={resultado.id}
+                      onClick={() => seleccionarResultado(resultado)}
+                      className="flex w-full items-start gap-3 border-b border-[#edf0f1] px-4 py-3 text-left last:border-b-0 hover:bg-[#f5fafa]"
+                    >
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#e4f1f1] text-[#168a8a]">
+                        {resultado.tipo === "producto" ? (
+                          <Package className="h-4 w-4" />
+                        ) : (
+                          <Download className="h-4 w-4" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-[#334952]">
+                          {resultado.titulo}
+                        </span>
+                        <span className="mt-0.5 block truncate text-xs text-slate-500">
+                          {resultado.presentacion
+                            ? `${resultado.presentacion} · `
+                            : ""}
+                          {resultado.tipo === "producto" &&
+                          resultado.precio_venta_centavos !== null
+                            ? `$${(resultado.precio_venta_centavos / 100).toFixed(2)} · `
+                            : ""}
+                          {resultado.detalle}
+                        </span>
+                        <span
+                          className={`mt-1 block text-[11px] font-semibold ${estadoColor}`}
+                        >
+                          {estado}: {disponibles} unidades
+                          {resultado.tipo === "producto" &&
+                          resultado.stock_minimo !== null
+                            ? ` · Mínimo ${resultado.stock_minimo}`
+                            : resultado.fecha_caducidad
+                              ? ` · Caduca ${fechaAlerta(resultado.fecha_caducidad)}`
+                              : ""}
+                        </span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+          <div
+            ref={perfilRef}
+            className="relative flex items-center gap-4 text-sm text-[#435862]"
+          >
             <div className="hidden items-center gap-2 border-r border-[#dce4e7] pr-4 lg:flex">
               <CalendarDays
                 className="h-5 w-5 text-[#435862]"
@@ -326,12 +451,15 @@ function App(): JSX.Element {
               />
               <span className="capitalize">{fechaHoy}</span>
             </div>
-            <div className="relative">
+            <div ref={notificacionesRef} className="relative">
               <button
                 type="button"
                 aria-label={`Notificaciones${alertas.length > 0 ? `: ${alertas.length} pendientes` : ""}`}
                 aria-expanded={notificacionesAbiertas}
-                onClick={() => setNotificacionesAbiertas((abierta) => !abierta)}
+                onClick={() => {
+                  setNotificacionesAbiertas((abierta) => !abierta)
+                  setPerfilAbierto(false)
+                }}
                 className={`relative rounded-xl p-2 text-xl transition hover:bg-[#edf2f3] ${
                   notificacionesAbiertas
                     ? "bg-[#edf2f3] text-[#168a8a]"
@@ -420,6 +548,11 @@ function App(): JSX.Element {
             </div>
             <button
               type="button"
+              onClick={() => {
+                setPerfilAbierto((abierto) => !abierto)
+                setNotificacionesAbiertas(false)
+              }}
+              aria-expanded={perfilAbierto}
               className="flex items-center gap-3 rounded-xl p-1.5 pr-2 text-left hover:bg-[#edf2f3]"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d9eeee] text-lg text-[#168a8a]">
@@ -431,6 +564,36 @@ function App(): JSX.Element {
               </span>
               <ChevronDown className="h-4 w-4 text-slate-500" />
             </button>
+            {perfilAbierto && (
+              <div className="absolute right-0 top-14 z-40 w-56 overflow-hidden rounded-2xl border border-[#dce4e7] bg-white py-2 shadow-xl">
+                <div className="border-b border-[#edf0f1] px-4 py-3">
+                  <p className="text-sm font-semibold text-[#334952]">
+                    Administrador
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">Sesión local</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPagina("configuracion")
+                    setPerfilAbierto(false)
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm text-[#52656c] hover:bg-[#f5fafa]"
+                >
+                  Configuración
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPerfilAbierto(false)
+                    setEstadoAuth("iniciar")
+                  }}
+                  className="w-full border-t border-[#edf0f1] px-4 py-3 text-left text-sm font-medium text-[#b06b76] hover:bg-[#fff5f5]"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
@@ -440,7 +603,9 @@ function App(): JSX.Element {
               productoIdInicial={
                 contextoAlerta?.accion === "producto"
                   ? contextoAlerta.alerta.producto_id
-                  : null
+                  : resultadoSeleccionado?.tipo === "producto"
+                    ? resultadoSeleccionado.producto_id
+                    : null
               }
             />
           ) : pagina === "ventas" ? (
@@ -465,7 +630,9 @@ function App(): JSX.Element {
               loteIdInicial={
                 contextoAlerta?.accion === "lote"
                   ? contextoAlerta.alerta.lote_id
-                  : null
+                  : resultadoSeleccionado?.tipo === "lote"
+                    ? resultadoSeleccionado.lote_id
+                    : null
               }
               abrirFormularioInicial={contextoAlerta?.accion === "entrada"}
             />

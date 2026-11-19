@@ -249,9 +249,13 @@ function Inventario({
       </div>
 
       {modalAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2d33]/55 p-4 backdrop-blur-[2px]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2d33]/55 p-4 backdrop-blur-[2px]"
+          onClick={cancelarEdicion}
+        >
           <form
             onSubmit={(event) => void guardarProducto(event)}
+            onClick={(event) => event.stopPropagation()}
             className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
           >
             <div className="mb-6 flex items-start justify-between gap-4 border-b border-[#e1e7e8] pb-4">

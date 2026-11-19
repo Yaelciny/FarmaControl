@@ -13,6 +13,7 @@ import { registerDashboardIpc } from "./ipc/dashboard.ipc"
 import { registerCajaIpc } from "./ipc/caja.ipc"
 import { registerReportesIpc } from "./ipc/reporte.ipc"
 import { registerAuthIpc } from "./ipc/auth.ipc"
+import { registerBusquedaIpc } from "./ipc/busqueda.ipc"
 
 function createWindow(): void {
   // Create the browser window.
@@ -60,6 +61,7 @@ app.whenReady().then(() => {
   registerCajaIpc()
   registerReportesIpc()
   registerAuthIpc()
+  registerBusquedaIpc()
   // Set app user model id for windows
   electronApp.setAppUserModelId("com.electron")
 

@@ -181,8 +181,14 @@ function Historial(): React.JSX.Element {
       </div>
 
       {detalleVenta && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2d33]/55 p-4 backdrop-blur-[2px]">
-          <section className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2d33]/55 p-4 backdrop-blur-[2px]"
+          onClick={() => setDetalleVenta(null)}
+        >
+          <section
+            className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="mb-6 flex items-start justify-between border-b border-[#e1e7e8] pb-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#168a8a]">

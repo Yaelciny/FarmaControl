@@ -152,9 +152,13 @@ function Salidas({
       </div>
 
       {modalAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2d33]/55 p-4 backdrop-blur-[2px]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2d33]/55 p-4 backdrop-blur-[2px]"
+          onClick={cerrarModal}
+        >
           <form
             onSubmit={(event) => void guardarSalida(event)}
+            onClick={(event) => event.stopPropagation()}
             className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl"
           >
             <div className="mb-6 flex items-start justify-between border-b border-[#e1e7e8] pb-4">
