@@ -34,6 +34,17 @@ const api: FarmaControlAPI = {
     listar: () => ipcRenderer.invoke("entradas:listar"),
     crear: (entrada: CrearEntrada) =>
       ipcRenderer.invoke("entradas:crear", entrada),
+    crearMultiple: (entrada: {
+      proveedor_id: number
+      fecha_llegada: string
+      lineas: Array<{
+        producto_id: number
+        numero_lote: string
+        fecha_caducidad: string
+        costo_unitario_centavos: number
+        cantidad: number
+      }>
+    }) => ipcRenderer.invoke("entradas:crear-multiple", entrada),
     actualizar: (entrada: CrearEntrada & { movimiento_id: number }) =>
       ipcRenderer.invoke("entradas:actualizar", entrada),
     cancelar: (movimientoId: number) =>

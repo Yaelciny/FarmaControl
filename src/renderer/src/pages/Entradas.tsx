@@ -19,6 +19,7 @@ import {
   fechaActualMexicoISO,
   formatearFechaHoraMexico
 } from "../../../shared/fecha"
+import RecepcionMultiple from "./RecepcionMultiple"
 
 const formularioInicial = {
   producto_id: "",
@@ -49,6 +50,7 @@ function Entradas({
   const [busqueda, setBusqueda] = useState("")
   const [formulario, setFormulario] = useState(formularioInicial)
   const [modalAbierto, setModalAbierto] = useState(false)
+  const [recepcionAbierta, setRecepcionAbierta] = useState(false)
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState("")
   const [editandoId, setEditandoId] = useState<number | null>(null)
@@ -120,7 +122,7 @@ function Entradas({
             producto_id: String(productoIdInicial)
           }))
           setError("")
-          setModalAbierto(true)
+          setRecepcionAbierta(true)
         }
       }
     }, 0)
@@ -185,7 +187,7 @@ function Entradas({
         err instanceof Error ? err.message : "No se pudo registrar la entrada"
       setError(
         mensaje.includes("UNIQUE")
-          ? "Ese lote ya está registrado para el medicamento seleccionado"
+          ? "Ese pedido ya está registrado para el medicamento seleccionado"
           : mensaje
       )
     } finally {
@@ -213,14 +215,14 @@ function Entradas({
     setEditandoId(null)
     setFormulario(formularioInicial)
     setError("")
-    setModalAbierto(true)
+    setRecepcionAbierta(true)
   }
 
   async function cancelarEntrada(entrada: Entrada): Promise<void> {
     if (entrada.tiene_salidas === 1 || entrada.cancelado === 1) return
     if (
       !window.confirm(
-        `¿Cancelar la entrada del lote “${entrada.numero_lote}”? El stock se revertirá.`
+        `¿Cancelar la entrada del pedido “${entrada.numero_lote}”? El stock se revertirá.`
       )
     )
       return
@@ -253,9 +255,23 @@ function Entradas({
         </h2>
         <p className="mt-2 max-w-2xl text-gray-500">
           Registra los medicamentos que llegan a la farmacia para aumentar
-          existencias y conservar el control por lote.
+          existencias y conservar el control por pedido.
         </p>
       </div>
+
+      {recepcionAbierta && (
+        <RecepcionMultiple
+          productos={productos}
+          proveedores={proveedores}
+          productoInicial={
+            productoIdInicial !== null && abrirFormularioInicial
+              ? productoIdInicial
+              : null
+          }
+          onClose={() => setRecepcionAbierta(false)}
+          onSaved={cargarDatos}
+        />
+      )}
 
       {modalAbierto && (
         <div
@@ -277,7 +293,7 @@ function Entradas({
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
                   {editandoId === null
-                    ? "La cantidad registrada aumentará el stock del lote seleccionado."
+                    ? "La cantidad registrada aumentará las existencias del pedido seleccionado."
                     : "Solo se pueden editar entradas que aún no tengan salidas."}
                 </p>
               </div>
@@ -340,7 +356,7 @@ function Entradas({
               </label>
               <label className="space-y-1">
                 <span className="text-sm font-medium text-gray-700">
-                  Número de lote <b className="text-[#d35d68]">*</b>
+                  Pedido / referencia <b className="text-[#d35d68]">*</b>
                 </span>
                 <input
                   required
@@ -487,7 +503,7 @@ function Entradas({
                   {detalle.producto_nombre}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Información completa del lote recibido.
+                  Información completa del pedido recibido.
                 </p>
               </div>
               <button
@@ -502,12 +518,12 @@ function Entradas({
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {[
                 ["Proveedor", detalle.proveedor_nombre],
-                ["Número de lote", detalle.numero_lote],
+                ["Pedido / referencia", detalle.numero_lote],
                 ["Fecha de llegada", detalle.fecha_llegada],
                 ["Fecha de caducidad", detalle.fecha_caducidad],
                 ["Cantidad recibida", `${detalle.cantidad} unidades`],
                 [
-                  "Stock actual del lote",
+                  "Piezas actuales del pedido",
                   `${detalle.stock_lote_actual} unidades`
                 ],
                 [
@@ -546,7 +562,7 @@ function Entradas({
             <input
               value={busqueda}
               onChange={(event) => setBusqueda(event.target.value)}
-              placeholder="Buscar por medicamento, proveedor o lote..."
+              placeholder="Buscar por medicamento, proveedor o pedido..."
               className="min-w-0 flex-1 outline-none"
             />
           </div>
@@ -572,7 +588,7 @@ function Entradas({
               <tr>
                 <th className="px-4 py-3 font-semibold">Medicamento</th>
                 <th className="px-4 py-3 font-semibold">Proveedor</th>
-                <th className="px-4 py-3 font-semibold">Lote</th>
+                <th className="px-4 py-3 font-semibold">Pedido</th>
                 <th className="px-4 py-3 font-semibold">Llegada</th>
                 <th className="px-4 py-3 font-semibold">Caducidad</th>
                 <th className="px-4 py-3 font-semibold">Cantidad</th>

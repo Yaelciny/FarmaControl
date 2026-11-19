@@ -12,6 +12,18 @@ interface CrearEntrada {
   cantidad: number
 }
 
+interface CrearEntradaMultiple {
+  proveedor_id: number
+  fecha_llegada: string
+  lineas: Array<{
+    producto_id: number
+    numero_lote: string
+    fecha_caducidad: string
+    costo_unitario_centavos: number
+    cantidad: number
+  }>
+}
+
 interface Entrada {
   id: number
   lote_id: number
@@ -139,6 +151,86 @@ export function registerEntradasIpc(): void {
 
     return transaccion()
   })
+
+  ipcMain.handle(
+    "entradas:crear-multiple",
+    (_event, datos: CrearEntradaMultiple) => {
+      if (!datos || !Array.isArray(datos.lineas) || datos.lineas.length === 0) {
+        throw new Error("Agrega al menos un medicamento")
+      }
+      if (
+        !Number.isSafeInteger(datos.proveedor_id) ||
+        datos.proveedor_id <= 0
+      ) {
+        throw new Error("Selecciona un proveedor")
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(datos.fecha_llegada)) {
+        throw new Error("La fecha de llegada no es válida")
+      }
+
+      const transaccion = db.transaction(() => {
+        const proveedor = db
+          .prepare("SELECT id FROM proveedores WHERE id = ? AND activo = 1")
+          .get(datos.proveedor_id)
+        if (!proveedor)
+          throw new Error("El proveedor no existe o está desactivado")
+
+        const ids: number[] = []
+        for (const linea of datos.lineas) {
+          const entrada = validarEntrada({
+            producto_id: linea.producto_id,
+            proveedor_id: datos.proveedor_id,
+            numero_lote: linea.numero_lote,
+            fecha_llegada: datos.fecha_llegada,
+            fecha_caducidad: linea.fecha_caducidad,
+            costo_unitario_centavos: linea.costo_unitario_centavos,
+            cantidad: linea.cantidad
+          })
+          const producto = db
+            .prepare("SELECT id FROM productos WHERE id = ? AND activo = 1")
+            .get(entrada.producto_id)
+          if (!producto)
+            throw new Error(
+              "Uno de los medicamentos no existe o está desactivado"
+            )
+          if (entrada.fecha_caducidad < fechaActualMexicoISO()) {
+            throw new Error("No se puede registrar mercancía ya caducada")
+          }
+
+          const lote = db
+            .prepare(
+              `
+              INSERT INTO lotes (producto_id, proveedor_id, numero_lote, fecha_llegada, fecha_caducidad, costo_unitario_centavos, cantidad_actual)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+            `
+            )
+            .run(
+              entrada.producto_id,
+              datos.proveedor_id,
+              entrada.numero_lote,
+              datos.fecha_llegada,
+              entrada.fecha_caducidad,
+              entrada.costo_unitario_centavos,
+              entrada.cantidad
+            )
+          db.prepare(
+            `
+            INSERT INTO movimientos (lote_id, tipo, cantidad, costo_unitario_centavos, motivo)
+            VALUES (?, 'entrada', ?, ?, 'Entrada de mercancía')
+          `
+          ).run(
+            lote.lastInsertRowid,
+            entrada.cantidad,
+            entrada.costo_unitario_centavos
+          )
+          ids.push(Number(lote.lastInsertRowid))
+        }
+        return ids
+      })
+
+      return { ids: transaccion() }
+    }
+  )
 
   ipcMain.handle(
     "entradas:actualizar",

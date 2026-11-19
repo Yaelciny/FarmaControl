@@ -243,6 +243,17 @@ export interface FarmaControlAPI {
   entradas: {
     listar: () => Promise<Entrada[]>
     crear: (entrada: CrearEntrada) => Promise<number>
+    crearMultiple: (entrada: {
+      proveedor_id: number
+      fecha_llegada: string
+      lineas: Array<{
+        producto_id: number
+        numero_lote: string
+        fecha_caducidad: string
+        costo_unitario_centavos: number
+        cantidad: number
+      }>
+    }) => Promise<{ ids: number[] }>
     actualizar: (
       entrada: CrearEntrada & { movimiento_id: number }
     ) => Promise<{ actualizado: boolean }>
