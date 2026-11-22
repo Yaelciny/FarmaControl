@@ -106,6 +106,13 @@ function Caja(): React.JSX.Element {
 
   const corte = estado.corte
   const diferencia = corte?.diferencia_centavos ?? null
+  const resultadoCorte = (valor: number | null): string => {
+    if (valor === null) return "Pendiente"
+    if (valor === 0) return "Cuadró"
+    return valor < 0
+      ? `Faltante ${moneda(Math.abs(valor))}`
+      : `Sobrante ${moneda(valor)}`
+  }
 
   return (
     <div className="space-y-6">
@@ -304,7 +311,8 @@ function Caja(): React.JSX.Element {
                 <th className="px-4 py-3">Cierre</th>
                 <th className="px-4 py-3">Ventas</th>
                 <th className="px-4 py-3">Esperado</th>
-                <th className="px-4 py-3">Diferencia</th>
+                <th className="px-4 py-3">Contado</th>
+                <th className="px-4 py-3">Resultado</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#edf0f1]">
@@ -325,12 +333,15 @@ function Caja(): React.JSX.Element {
                   <td className="px-4 py-4 text-slate-600">
                     {moneda(item.efectivo_esperado_centavos)}
                   </td>
+                  <td className="px-4 py-4 text-slate-600">
+                    {item.efectivo_contado_centavos === null
+                      ? "—"
+                      : moneda(item.efectivo_contado_centavos)}
+                  </td>
                   <td
                     className={`px-4 py-4 font-semibold ${item.diferencia_centavos === 0 ? "text-[#29835f]" : item.diferencia_centavos !== null && item.diferencia_centavos < 0 ? "text-[#b06b76]" : "text-[#9b742c]"}`}
                   >
-                    {item.diferencia_centavos === null
-                      ? "—"
-                      : moneda(item.diferencia_centavos)}
+                    {resultadoCorte(item.diferencia_centavos)}
                   </td>
                 </tr>
               ))}

@@ -249,10 +249,10 @@ function Salidas({
               </label>
               <label className="space-y-1 sm:col-span-2">
                 <span className="text-sm font-medium text-gray-700">
-                  Observación <b className="text-[#d35d68]">*</b>
+                  Observación{" "}
+                  <span className="font-normal text-slate-400">(opcional)</span>
                 </span>
                 <textarea
-                  required
                   rows={3}
                   placeholder="Ej. Caja dañada durante la recepción"
                   value={formulario.observacion}

@@ -185,7 +185,9 @@ function Reportes(): React.JSX.Element {
       >
         <div className="flex flex-wrap items-end gap-4">
           <label className="space-y-1">
-            <span className="text-sm font-medium text-gray-700">Desde</span>
+            <span className="text-sm font-medium text-gray-700">
+              Desde <b className="text-[#d35d68]">*</b>
+            </span>
             <div className="flex items-center gap-2 rounded-lg border border-[#d1dcdf] px-3 focus-within:border-[#18a7a7]">
               <CalendarDays className="h-4 w-4 text-slate-400" />
               <input
@@ -198,7 +200,9 @@ function Reportes(): React.JSX.Element {
             </div>
           </label>
           <label className="space-y-1">
-            <span className="text-sm font-medium text-gray-700">Hasta</span>
+            <span className="text-sm font-medium text-gray-700">
+              Hasta <b className="text-[#d35d68]">*</b>
+            </span>
             <div className="flex items-center gap-2 rounded-lg border border-[#d1dcdf] px-3 focus-within:border-[#18a7a7]">
               <CalendarDays className="h-4 w-4 text-slate-400" />
               <input

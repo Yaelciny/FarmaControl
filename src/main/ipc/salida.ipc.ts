@@ -49,9 +49,7 @@ function validarSalida(datos: CrearSalida): CrearSalida {
     throw new Error("Selecciona un motivo válido")
   if (!Number.isSafeInteger(datos.cantidad) || datos.cantidad <= 0)
     throw new Error("La cantidad debe ser un entero mayor a cero")
-  if (!datos.observacion?.trim())
-    throw new Error("La observación es obligatoria")
-  return { ...datos, observacion: datos.observacion.trim() }
+  return { ...datos, observacion: datos.observacion?.trim() || null }
 }
 
 export function registerSalidasIpc(): void {
@@ -146,7 +144,7 @@ export function registerSalidasIpc(): void {
         tipo,
         salida.cantidad,
         lote.costo_unitario_centavos,
-        `${etiqueta}: ${salida.observacion}`
+        salida.observacion ? `${etiqueta}: ${salida.observacion}` : etiqueta
       )
     })
 

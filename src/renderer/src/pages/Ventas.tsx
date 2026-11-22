@@ -310,8 +310,9 @@ function Ventas(): React.JSX.Element {
             </div>
             {metodoPago === "efectivo" && (
               <label className="mt-4 block text-sm font-medium text-slate-600">
-                Monto recibido
+                Monto recibido <b className="text-[#d35d68]">*</b>
                 <input
+                  required
                   type="number"
                   min="0"
                   step="0.01"
