@@ -14,8 +14,8 @@ function marcaTiempo(): string {
 export function registerRespaldoIpc(): void {
   ipcMain.handle("respaldo:crear", async () => {
     const resultado = await dialog.showSaveDialog({
-      title: "Guardar respaldo de FarmaControl",
-      defaultPath: `farmacontrol-respaldo-${marcaTiempo()}.db`,
+      title: "Guardar respaldo de Farmacia Medina",
+      defaultPath: `farmacia-medina-respaldo-${marcaTiempo()}.db`,
       filters: [{ name: "Base de datos SQLite", extensions: ["db"] }]
     })
     if (resultado.canceled || !resultado.filePath) {
@@ -30,7 +30,7 @@ export function registerRespaldoIpc(): void {
 
   ipcMain.handle("respaldo:restaurar", async () => {
     const resultado = await dialog.showOpenDialog({
-      title: "Seleccionar respaldo de FarmaControl",
+      title: "Seleccionar respaldo de Farmacia Medina",
       properties: ["openFile"],
       filters: [{ name: "Base de datos SQLite", extensions: ["db", "sqlite"] }]
     })

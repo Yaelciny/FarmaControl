@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react"
-import { Eye, EyeOff, LockKeyhole, LogIn } from "lucide-react"
+import { Eye, EyeOff, LogIn } from "lucide-react"
+import logo from "../../../assets/logo-sinfondo.png"
 
 interface AccesoProps {
   modo: "configurar" | "iniciar"
@@ -43,14 +44,18 @@ function Acceso({ modo, onSuccess }: AccesoProps): React.JSX.Element {
     <main className="flex min-h-screen items-center justify-center bg-[#f1f4f5] p-4">
       <section className="w-full max-w-md rounded-3xl border border-[#dce4e7] bg-white p-8 shadow-xl">
         <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#e4f5ef] text-[#168a8a]">
-            <LockKeyhole className="h-8 w-8" />
-          </div>
+          <img
+            src={logo}
+            alt="Logo de Farmacia Medina"
+            className="mx-auto h-20 w-20 object-contain"
+          />
           <p className="mt-5 text-sm font-semibold text-[#168a8a]">
             Farmacia Medina
           </p>
           <h1 className="mt-1 text-2xl font-bold text-[#334952]">
-            {configurando ? "Configura tu acceso" : "Bienvenido a FarmaControl"}
+            {configurando
+              ? "Configura tu acceso"
+              : "Bienvenido a Farmacia Medina"}
           </h1>
           <p className="mt-2 text-sm text-slate-500">
             {configurando

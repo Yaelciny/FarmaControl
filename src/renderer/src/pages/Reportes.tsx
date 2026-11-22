@@ -88,7 +88,7 @@ function Reportes(): React.JSX.Element {
 
   function exportarCsv(): void {
     const filas = [
-      ["Reporte de FarmaControl"],
+      ["Reporte de Farmacia Medina"],
       ["Periodo", `${desde} a ${hasta}`],
       [],
       ["VENTAS"],
@@ -126,7 +126,7 @@ function Reportes(): React.JSX.Element {
     enlace.href = URL.createObjectURL(
       new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8" })
     )
-    enlace.download = `reporte-farmacontrol-${desde}-a-${hasta}.csv`
+    enlace.download = `reporte-farmacia-medina-${desde}-a-${hasta}.csv`
     enlace.click()
     URL.revokeObjectURL(enlace.href)
   }

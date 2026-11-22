@@ -40,6 +40,7 @@ import type {
   DashboardResumen,
   ResultadoBusqueda
 } from "../../preload/global"
+import logo from "../../assets/logo-sinfondo.png"
 
 type Pagina =
   | "dashboard"
@@ -302,7 +303,7 @@ function App(): JSX.Element {
   if (estadoAuth === "cargando") {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f1f4f5] text-sm text-slate-500">
-        Cargando FarmaControl...
+        Cargando Farmacia Medina...
       </main>
     )
   }
@@ -320,12 +321,16 @@ function App(): JSX.Element {
     <div className="flex min-h-screen bg-[#f1f4f5]">
       <aside className="flex w-72 shrink-0 flex-col border-r border-[#e1e9e8] bg-white px-5 py-6 text-[#334952] print:hidden">
         <div className="mb-8 flex items-center gap-3 px-2">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e4f5ef] text-2xl font-bold text-[#168a8a] shadow-sm">
-            ✚
-          </div>
+          <img
+            src={logo}
+            alt="Logo de Farmacia Medina"
+            className="h-11 w-11 rounded-2xl object-contain"
+          />
           <div>
             <p className="text-lg font-bold leading-tight">Farmacia Medina</p>
-            <p className="text-xs tracking-wide text-slate-500">FarmaControl</p>
+            <p className="text-xs tracking-wide text-slate-500">
+              Farmacia Medina
+            </p>
           </div>
         </div>
 
